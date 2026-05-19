@@ -1,6 +1,12 @@
 import logging
 import uuid
+import time
 from fastapi import FastAPI, Depends, HTTPException, Form, File, UploadFile, Request
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.gzip import GZIPMiddleware
+from fastapi.middleware.trustedhost import TrustedHostMiddleware
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
 from slowapi import Limiter
 from slowapi.util import get_remote_address
 from sqlalchemy.orm import Session
@@ -24,16 +30,55 @@ app = FastAPI(
 )
 app.state.limiter = limiter
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+app.add_middleware(GZIPMiddleware, minimum_size=1000)
+app.add_middleware(
+    TrustedHostMiddleware, allowed_hosts=["*"]
+)
+
 
 @app.middleware("http")
-async def add_trace_id(request: Request, call_next):
+async def add_trace_id_and_timing(request: Request, call_next):
     trace_id = str(uuid.uuid4())
     request.state.trace_id = trace_id
+    start_time = time.time()
+
     logger.info(f"[{trace_id}] {request.method} {request.url.path}")
+
     response = await call_next(request)
+
+    process_time = time.time() - start_time
+
     response.headers["X-Trace-ID"] = trace_id
-    logger.info(f"[{trace_id}] Status: {response.status_code}")
+    response.headers["X-Process-Time"] = str(process_time)
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["X-XSS-Protection"] = "1; mode=block"
+
+    logger.info(
+        f"[{trace_id}] Status: {response.status_code} "
+        f"Time: {process_time:.3f}s"
+    )
+
     return response
+
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    return JSONResponse(
+        status_code=422,
+        content={
+            "detail": "Validation error",
+            "errors": exc.errors(),
+            "trace_id": getattr(request.state, "trace_id", "unknown")
+        }
+    )
 
 
 @app.get("/health")

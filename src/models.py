@@ -3,6 +3,14 @@ from sqlalchemy import Column, Integer, String, Date, Boolean, ForeignKey
 from sqlalchemy.orm import relationship
 from .database import Base
 
+class User(Base):
+    __tablename__ = "users"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    username = Column(String, nullable=False, unique=True)
+    email = Column(String, nullable=False, unique=True)
+    avatar_url = Column(String, nullable=True)
+    created_at = Column(Date, default=date.today)
 
 class Habit(Base):
     __tablename__ = "habits"
@@ -32,7 +40,7 @@ class Habit(Base):
 
 class HabitLog(Base):
     __tablename__ = "habit_logs"
-    
+
     id = Column(Integer, primary_key=True, index=True)
     habit_id = Column(Integer, ForeignKey("habits.id"), nullable=False)
     log_date = Column(Date, nullable=False)
@@ -40,5 +48,6 @@ class HabitLog(Base):
     duration = Column(Integer, nullable=True)
     notes = Column(String, nullable=True)
     mood = Column(Integer, nullable=True)
-    
+    photo_url = Column(String, nullable=True)
+
     habit = relationship("Habit", back_populates="logs")

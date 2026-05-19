@@ -6,7 +6,10 @@ from sqlalchemy.orm import sessionmaker
 import factory
 
 # Use PostgreSQL for tests (same as production)
-os.environ["DATABASE_URL"] = "postgresql://user:password@localhost:5432/habits"
+# Use 'db' host when in Docker container, otherwise 'localhost'
+db_host = os.getenv("DB_HOST", "db")
+database_url = f"postgresql://user:password@{db_host}:5432/habits"
+os.environ["DATABASE_URL"] = database_url
 
 from src.main import app
 from src.database import Base, get_db

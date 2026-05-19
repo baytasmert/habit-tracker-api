@@ -24,6 +24,9 @@ class HabitResponse(BaseModel):
 class TrackRequest(BaseModel):
     date: Optional[date] = None
     done: bool = True
+    duration: Optional[int] = None
+    notes: Optional[str] = None
+    mood: Optional[int] = None
 
 
 class TrackResponse(BaseModel):

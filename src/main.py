@@ -1,7 +1,10 @@
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi import FastAPI, Depends, HTTPException, Form, Body
 from sqlalchemy.orm import Session
 from datetime import date, timedelta
 from typing import List, Optional, Dict
+from fastapi import File, UploadFile
+from .aws.s3_service import S3Service
+from .models import User, Habit, HabitLog
 
 from .database import get_db, engine, Base
 from .models import Habit, HabitLog
@@ -65,7 +68,7 @@ def get_habit(habit_id: int, db: Session = Depends(get_db)):
 
 
 @app.post("/habits/{habit_id}/track", response_model=TrackResponse)
-def track_habit(
+async def track_habit(
     habit_id: int,
     payload: TrackRequest,
     db: Session = Depends(get_db)
@@ -75,7 +78,7 @@ def track_habit(
         raise HTTPException(status_code=404, detail="Habit not found")
 
     track_date = payload.date or date.today()
-    
+
     existing_log = db.query(HabitLog).filter(
         HabitLog.habit_id == habit_id,
         HabitLog.log_date == track_date
@@ -83,11 +86,17 @@ def track_habit(
 
     if existing_log:
         existing_log.done = payload.done
+        existing_log.duration = payload.duration
+        existing_log.notes = payload.notes
+        existing_log.mood = payload.mood
     else:
         new_log = HabitLog(
             habit_id=habit_id,
             log_date=track_date,
-            done=payload.done
+            done=payload.done,
+            duration=payload.duration,
+            notes=payload.notes,
+            mood=payload.mood
         )
         db.add(new_log)
 
@@ -140,3 +149,66 @@ def update_habit(
     db.commit()
     db.refresh(habit)
     return habit
+
+@app.post("/users", status_code=201)
+def create_user(username: str = Form(...), email: str = Form(...), db: Session = Depends(get_db)):
+    """Yeni kullanıcı oluştur"""
+    existing = db.query(User).filter(User.username == username).first()
+    if existing:
+        raise HTTPException(status_code=400, detail="Username already exists")
+
+    new_user = User(username=username, email=email)
+    db.add(new_user)
+    db.commit()
+    db.refresh(new_user)
+
+    return {"id": new_user.id, "username": new_user.username, "email": new_user.email}
+
+@app.post("/users/{user_id}/avatar")
+async def upload_avatar(user_id: int, file: UploadFile = File(...), db: Session = Depends(get_db)):
+    """Kullanıcı avatar'ı yükle"""
+    # Kullanıcıyı kontrol et
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Dosyayı oku
+    file_content = await file.read()
+    
+    # S3'e yükle
+    s3 = S3Service()
+    file_key = f"avatars/user-{user_id}.jpg"
+    url = s3.upload_file(file_key, file_content)
+    
+    if not url:
+        raise HTTPException(status_code=500, detail="Upload failed")
+    
+    # Database'e kaydet
+    user.avatar_url = url
+    db.commit()
+    db.refresh(user)
+    
+    return {"avatar_url": url, "user_id": user_id}
+
+
+@app.get("/users/{user_id}/avatar")
+def download_avatar(user_id: int, db: Session = Depends(get_db)):
+    """Kullanıcı avatar'ını indir"""
+    # Kullanıcıyı kontrol et
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    if not user.avatar_url:
+        raise HTTPException(status_code=404, detail="Avatar not found")
+    
+    # S3'ten indir
+    s3 = S3Service()
+    file_key = f"avatars/user-{user_id}.jpg"
+    file_data = s3.download_file(file_key)
+    
+    if not file_data:
+        raise HTTPException(status_code=500, detail="Download failed")
+    
+    from fastapi.responses import StreamingResponse
+    return StreamingResponse(iter([file_data]), media_type="image/jpeg")

@@ -1,6 +1,6 @@
 from pydantic import BaseModel, ConfigDict
 from datetime import date
-from typing import Optional, Dict
+from typing import Optional
 
 
 class HabitCreate(BaseModel):

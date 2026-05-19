@@ -3,18 +3,20 @@ from sqlalchemy import Column, Integer, String, Date, Boolean, ForeignKey
 from sqlalchemy.orm import relationship
 from .database import Base
 
+
 class User(Base):
     __tablename__ = "users"
-    
+
     id = Column(Integer, primary_key=True, index=True)
     username = Column(String, nullable=False, unique=True)
     email = Column(String, nullable=False, unique=True)
     avatar_url = Column(String, nullable=True)
     created_at = Column(Date, default=date.today)
 
+
 class Habit(Base):
     __tablename__ = "habits"
-    
+
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, nullable=False)
     description = Column(String, nullable=True)
@@ -26,13 +28,15 @@ class Habit(Base):
     is_active = Column(Boolean, default=True)
     created_at = Column(Date, default=date.today)
     updated_at = Column(Date, onupdate=date.today)
-    
-    logs = relationship("HabitLog", back_populates="habit", cascade="all, delete-orphan")
-    
+
+    logs = relationship(
+        "HabitLog", back_populates="habit", cascade="all, delete-orphan"
+    )
+
     @property
     def tracked_days(self) -> int:
         return sum(1 for log in self.logs if log.done)
-    
+
     @property
     def history(self) -> dict:
         return {log.log_date: log.done for log in self.logs}

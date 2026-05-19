@@ -1,6 +1,7 @@
 import boto3
 import os
 
+
 class S3Service:
     def __init__(self):
         self.endpoint_url = os.getenv('AWS_ENDPOINT_URL', 'http://localhost:4566')
@@ -25,7 +26,7 @@ class S3Service:
         except Exception:
             try:
                 self.s3.create_bucket(Bucket=self.bucket_name)
-            except Exception as e:
+            except Exception:
                 pass
 
     def upload_file(self, file_key: str, file_data: bytes) -> str:

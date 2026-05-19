@@ -1,13 +1,10 @@
-from fastapi import FastAPI, Depends, HTTPException, Form, Body
+from fastapi import FastAPI, Depends, HTTPException, Form, File, UploadFile
 from sqlalchemy.orm import Session
 from datetime import date, timedelta
-from typing import List, Optional, Dict
-from fastapi import File, UploadFile
+from typing import List, Optional
 from .aws.s3_service import S3Service
 from .models import User, Habit, HabitLog
-
 from .database import get_db, engine, Base
-from .models import Habit, HabitLog
 from .schemas import (
     HabitCreate, HabitResponse, TrackRequest,
     TrackResponse, StreakResponse
@@ -25,7 +22,7 @@ def startup():
     Base.metadata.create_all(bind=engine)
 
 
-def compute_streak(history: Dict[date, bool]) -> tuple[int, Optional[date]]:
+def compute_streak(history: dict) -> tuple[int, Optional[date]]:
     done_dates = sorted([d for d, done in history.items() if done])
     if not done_dates:
         return 0, None

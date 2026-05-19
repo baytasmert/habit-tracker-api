@@ -17,7 +17,10 @@ from .models import User, Habit, HabitLog
 from .database import get_db, engine, Base
 from .schemas import (
     HabitCreate, HabitResponse, TrackRequest,
-    TrackResponse, StreakResponse
+    TrackResponse, StreakResponse, LoginRequest, LoginResponse, UserResponse
+)
+from .auth import (
+    hash_password, verify_password, create_access_token, get_current_user
 )
 
 logger = logging.getLogger(__name__)
@@ -107,10 +110,13 @@ def compute_streak(history: dict) -> tuple[int, Optional[date]]:
 
 @app.get("/habits", response_model=List[HabitResponse])
 @limiter.limit("100/minute")
-def list_habits(db: Session = Depends(get_db)):
-    logger.info("Fetching all habits")
+def list_habits(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    logger.info(f"Fetching habits for user: {current_user.id}")
     habits = db.query(Habit).all()
-    logger.info(f"Retrieved {len(habits)} habits")
+    logger.info(f"Retrieved {len(habits)} habits for user: {current_user.id}")
     return habits
 
 
@@ -221,17 +227,58 @@ def update_habit(
     return habit
 
 
+@app.post("/login", response_model=LoginResponse)
+def login(payload: LoginRequest, db: Session = Depends(get_db)):
+    logger.info(f"Login attempt for user: {payload.username}")
+    user = db.query(User).filter(User.username == payload.username).first()
+
+    if not user or not verify_password(payload.password, user.hashed_password):
+        logger.warning(f"Failed login attempt for user: {payload.username}")
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+
+    token = create_access_token(user_id=user.id)
+    logger.info(f"Successful login for user: {payload.username}")
+    return {"access_token": token}
+
+
+@app.post("/register", response_model=UserResponse, status_code=201)
+def register(payload: LoginRequest, db: Session = Depends(get_db)):
+    logger.info(f"Registration attempt for user: {payload.username}")
+    existing = db.query(User).filter(User.username == payload.username).first()
+    if existing:
+        raise HTTPException(status_code=400, detail="Username already exists")
+
+    hashed_password = hash_password(payload.password)
+    new_user = User(
+        username=payload.username,
+        email=f"{payload.username}@example.com",
+        hashed_password=hashed_password
+    )
+    db.add(new_user)
+    db.commit()
+    db.refresh(new_user)
+
+    logger.info(f"User registered successfully: {payload.username}")
+    return new_user
+
+
 @app.post("/users", status_code=201)
 def create_user(
     username: str = Form(...),
     email: str = Form(...),
+    password: str = Form(...),
     db: Session = Depends(get_db)
 ):
     existing = db.query(User).filter(User.username == username).first()
     if existing:
         raise HTTPException(status_code=400, detail="Username already exists")
 
-    new_user = User(username=username, email=email)
+    hashed_password = hash_password(password)
+    new_user = User(
+        username=username,
+        email=email,
+        hashed_password=hashed_password
+    )
     db.add(new_user)
     db.commit()
     db.refresh(new_user)

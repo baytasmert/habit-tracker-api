@@ -10,6 +10,7 @@ class User(Base):
     id = Column(Integer, primary_key=True, index=True)
     username = Column(String, nullable=False, unique=True)
     email = Column(String, nullable=False, unique=True)
+    hashed_password = Column(String, nullable=False)
     avatar_url = Column(String, nullable=True)
     created_at = Column(Date, default=date.today)
 

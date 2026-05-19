@@ -433,6 +433,205 @@
         }
       },
       "response": []
+    },
+    {
+      "name": "NEG: Access /habits without token",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 403 Forbidden', function () {",
+              "    pm.response.to.have.status(403);",
+              "});",
+              "pm.test('Error message exists', function () {",
+              "    pm.expect(pm.response.json()).to.have.property('detail');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/habits",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "habits"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "NEG: Access /habits with invalid token",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 401 Unauthorized', function () {",
+              "    pm.response.to.have.status(401);",
+              "});",
+              "pm.test('Error message exists', function () {",
+              "    pm.expect(pm.response.json()).to.have.property('detail');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer invalid_token_xyz"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/habits",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "habits"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "NEG: Get non-existent habit",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 404 Not Found', function () {",
+              "    pm.response.to.have.status(404);",
+              "});",
+              "pm.test('Error message contains Habit not found', function () {",
+              "    pm.expect(pm.response.json().detail).to.include('not found');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/habits/99999",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "habits",
+            "99999"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "NEG: Register duplicate username",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 400 Bad Request', function () {",
+              "    pm.response.to.have.status(400);",
+              "});",
+              "pm.test('Error message contains username exists', function () {",
+              "    pm.expect(pm.response.json().detail).to.include('exists');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"username\": \"testuser\",\r\n  \"password\": \"differentpassword123\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/register",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "register"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "NEG: Login with wrong password",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 401 Unauthorized', function () {",
+              "    pm.response.to.have.status(401);",
+              "});",
+              "pm.test('Error message is Invalid credentials', function () {",
+              "    pm.expect(pm.response.json().detail).to.equal('Invalid credentials');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"username\": \"testuser\",\r\n  \"password\": \"wrongpassword\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/login",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "login"
+          ]
+        }
+      },
+      "response": []
     }
   ],
   "event": [

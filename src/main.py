@@ -111,6 +111,7 @@ def compute_streak(history: dict) -> tuple[int, Optional[date]]:
 @app.get("/habits", response_model=List[HabitResponse])
 @limiter.limit("100/minute")
 def list_habits(
+    request: Request,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):

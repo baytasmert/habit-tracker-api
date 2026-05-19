@@ -174,7 +174,7 @@ jobs:
         run: |
           newman run ./postman/HabitTrackerAPI.postman_collection.json \
             --environment ./postman/environment.json \
-            --globals ./postman/environment.json \
+            --variable base_url=http://localhost:8001 \
             --reporters cli,json \
             --reporter-json-export ./postman-results.json || exit 1
 

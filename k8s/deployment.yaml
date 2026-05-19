@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: habit-tracker-api
+  namespace: default
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: habit-tracker-api
+  template:
+    metadata:
+      labels:
+        app: habit-tracker-api
+    spec:
+      containers:
+      - name: api
+        image: habit_tracker_api-1-api:latest
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 8000
+        envFrom:
+        - configMapRef:
+            name: habit-tracker-config
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"

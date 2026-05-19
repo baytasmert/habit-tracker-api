@@ -1,0 +1,44 @@
+from datetime import date
+from sqlalchemy import Column, Integer, String, Date, Boolean, ForeignKey
+from sqlalchemy.orm import relationship
+from .database import Base
+
+
+class Habit(Base):
+    __tablename__ = "habits"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, nullable=False)
+    description = Column(String, nullable=True)
+    category = Column(String, default="other")
+    goal_days_per_week = Column(Integer, default=7)
+    target_duration = Column(Integer, nullable=True)
+    reminder_time = Column(String, nullable=True)
+    color = Column(String, default="#3B82F6")
+    is_active = Column(Boolean, default=True)
+    created_at = Column(Date, default=date.today)
+    updated_at = Column(Date, onupdate=date.today)
+    
+    logs = relationship("HabitLog", back_populates="habit", cascade="all, delete-orphan")
+    
+    @property
+    def tracked_days(self) -> int:
+        return sum(1 for log in self.logs if log.done)
+    
+    @property
+    def history(self) -> dict:
+        return {log.log_date: log.done for log in self.logs}
+
+
+class HabitLog(Base):
+    __tablename__ = "habit_logs"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    habit_id = Column(Integer, ForeignKey("habits.id"), nullable=False)
+    log_date = Column(Date, nullable=False)
+    done = Column(Boolean, default=False)
+    duration = Column(Integer, nullable=True)
+    notes = Column(String, nullable=True)
+    mood = Column(Integer, nullable=True)
+    
+    habit = relationship("Habit", back_populates="logs")

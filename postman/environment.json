@@ -1,0 +1,11 @@
+{
+  "id": "habit-tracker-env",
+  "name": "Local Development",
+  "values": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8001",
+      "enabled": true
+    }
+  ]
+}

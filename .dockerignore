@@ -1,0 +1,14 @@
+__pycache__
+.pytest_cache
+.coverage
+*.pyc
+.env
+.git
+.gitignore
+README.md
+.vscode
+.idea
+postman/
+k8s/
+docs/
+perf/

@@ -8,7 +8,18 @@ env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
 
+# ═══════════════════════════════════════════════════════════════════
+# CI/CD PIPELINE AKIŞI:
+# 1. lint → Kod style kontrol (flake8)
+# 2. test → Unit + integration test (PostgreSQL + LocalStack container)
+# 3. build → Docker image inşa ve registry'ye push
+# 4. deploy-and-test → Kind cluster kurup, K8s test et
+# ═══════════════════════════════════════════════════════════════════
+
 jobs:
+  # ─────────────────────────────────────────────────────────────────
+  # JOB 1: LINT (Kod stilini kontrol et)
+  # ─────────────────────────────────────────────────────────────────
   lint:
     runs-on: ubuntu-latest
     steps:
@@ -24,9 +35,17 @@ jobs:
       
       - name: Lint with flake8
         run: flake8 src/ --max-line-length=120
+
+  # ─────────────────────────────────────────────────────────────────
+  # JOB 2: TEST (Unit + Integration testler)
+  # Containerlar: PostgreSQL (port 5432), LocalStack S3 (port 4566)
+  # Kapanış: Job bitince otomatik silinir
+  # ─────────────────────────────────────────────────────────────────
   test:
     runs-on: ubuntu-latest
     services:
+      # 🐘 PostgreSQL Container Başlatılıyor (5432)
+      # Test database'i için kullanılıyor
       postgres:
         image: postgres:16
         env:
@@ -40,13 +59,17 @@ jobs:
           --health-retries 5
         ports:
           - 5432:5432
-      localstack:  
+
+      # 📦 LocalStack Container Başlatılıyor (4566)
+      # AWS S3 emülasyonu için (avatar upload/download test)
+      localstack:
         image: localstack/localstack:latest
         env:
           SERVICES: s3
           DEBUG: 1
           DATA_DIR: /tmp/localstack
           DOCKER_HOST: unix:///var/run/docker.sock
+          LOCALSTACK_EDITION: community
         ports:
           - 4566:4566
     
@@ -73,6 +96,13 @@ jobs:
           file: ./coverage.xml
           flags: unittests
           name: codecov-umbrella
+
+  # 📝 TEST JOB SONU: PostgreSQL ve LocalStack containerları otomatik silinir
+
+  # ─────────────────────────────────────────────────────────────────
+  # JOB 3: BUILD (Docker image inşa ve registry'ye push)
+  # Öncül: lint ve test jobları başarılı olmalı
+  # ─────────────────────────────────────────────────────────────────
   build:
     runs-on: ubuntu-latest
     needs: [lint, test]
@@ -126,6 +156,7 @@ jobs:
           DEBUG: 1
           DATA_DIR: /tmp/localstack
           DOCKER_HOST: unix:///var/run/docker.sock
+          LOCALSTACK_EDITION: community
         ports:
           - 4566:4566
     steps:

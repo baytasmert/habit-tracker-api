@@ -40,7 +40,19 @@
       "Bash(docker restart *)",
       "Bash(python debug_track2.py)",
       "Bash(python3 -c ' *)",
-      "Bash(git commit -m 'S3 integration with LocalStack, avatar upload/download, and improved habit tracking *)"
+      "Bash(git commit -m 'S3 integration with LocalStack, avatar upload/download, and improved habit tracking *)",
+      "Bash(git remote *)",
+      "Bash(git commit *)",
+      "Bash(ls -la \"C:\\\\Users\\\\Asus\\\\.claude\\\\projects\\\\c--Users-Asus-OneDrive-Desktop-Universite-BilgisayarMuhendisligi-bulut-test-habit-tracker-api-1\\\\\" 2>&1)",
+      "Read(//c/Users/Asus/.claude/projects/**)",
+      "PowerShell(Head -20)",
+      "Bash(git reset *)",
+      "Bash(docker pull *)",
+      "PowerShell(Restart-Service Docker -Force -ErrorAction SilentlyContinue)",
+      "Bash(docker run *)",
+      "Bash(curl -s http://localhost:4566/_localstack/health)",
+      "Bash(docker stop *)",
+      "Bash(docker rm *)"
     ]
   }
 }

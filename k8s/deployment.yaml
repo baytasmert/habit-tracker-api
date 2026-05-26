@@ -22,7 +22,7 @@ spec:
     spec:
       containers:
       - name: api
-        image: habit_tracker_api-1-api:latest
+        image: habit-tracker-api:latest
         imagePullPolicy: Never
         ports:
         - containerPort: 8000

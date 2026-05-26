@@ -6,7 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from fastapi.exceptions import RequestValidationError
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, Response
 from slowapi import Limiter
 from slowapi.util import get_remote_address
 from sqlalchemy.orm import Session
@@ -22,6 +22,26 @@ from .schemas import (
 from .auth import (
     hash_password, verify_password, create_access_token, get_current_user
 )
+from .metrics import http_requests_total, http_request_duration_seconds
+
+# OpenTelemetry Setup
+from opentelemetry import trace as otel_trace
+from opentelemetry.sdk.trace import TracerProvider
+from opentelemetry.sdk.trace.export import BatchSpanProcessor
+from opentelemetry.exporter.jaeger.thrift import JaegerExporter
+from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
+from opentelemetry.instrumentation.sqlalchemy import SQLAlchemyInstrumentor
+
+# Jaeger Exporter
+jaeger_exporter = JaegerExporter(
+    agent_host_name="jaeger",
+    agent_port=6831,
+)
+
+# Trace Provider
+trace_provider = TracerProvider()
+trace_provider.add_span_processor(BatchSpanProcessor(jaeger_exporter))
+otel_trace.set_tracer_provider(trace_provider)
 
 logger = logging.getLogger(__name__)
 limiter = Limiter(key_func=get_remote_address)
@@ -32,6 +52,12 @@ app = FastAPI(
     version="0.1.0"
 )
 app.state.limiter = limiter
+
+# FastAPI Instrumentation (OTel)
+FastAPIInstrumentor.instrument_app(app)
+
+# Database Instrumentation (OTel)
+SQLAlchemyInstrumentor().instrument(engine=engine)
 
 app.add_middleware(
     CORSMiddleware,
@@ -48,21 +74,43 @@ app.add_middleware(
 
 @app.middleware("http")
 async def add_trace_id_and_timing(request: Request, call_next):
-    trace_id = str(uuid.uuid4())
+    # Get OTel trace_id
+    otel_span = otel_trace.get_current_span()
+    otel_trace_id = format(otel_span.get_span_context().trace_id, '032x') if otel_span.get_span_context().trace_id else None
+
+    # Use OTel trace_id if available, otherwise generate UUID
+    trace_id = otel_trace_id if otel_trace_id else str(uuid.uuid4())
     request.state.trace_id = trace_id
     start_time = time.time()
 
-    logger.info(f"[{trace_id}] {request.method} {request.url.path}")
+    # Log with trace_id and OTel trace_id
+    log_message = f"[{trace_id}] {request.method} {request.url.path}"
+    if otel_trace_id:
+        log_message += f" | otel_trace_id={otel_trace_id}"
+    logger.info(log_message)
 
     response = await call_next(request)
 
     process_time = time.time() - start_time
 
     response.headers["X-Trace-ID"] = trace_id
+    response.headers["X-OTel-Trace-ID"] = otel_trace_id if otel_trace_id else "unknown"
     response.headers["X-Process-Time"] = str(process_time)
     response.headers["X-Content-Type-Options"] = "nosniff"
     response.headers["X-Frame-Options"] = "DENY"
     response.headers["X-XSS-Protection"] = "1; mode=block"
+
+    # Record Prometheus metrics
+    http_requests_total.labels(
+        method=request.method,
+        endpoint=request.url.path,
+        status=response.status_code
+    ).inc()
+
+    http_request_duration_seconds.labels(
+        method=request.method,
+        endpoint=request.url.path
+    ).observe(process_time)
 
     logger.info(
         f"[{trace_id}] Status: {response.status_code} "
@@ -87,6 +135,16 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
 @app.get("/health")
 def health():
     return {"status": "ok"}
+
+
+@app.get("/metrics")
+def get_metrics():
+    from prometheus_client import generate_latest, REGISTRY
+    from fastapi.responses import Response
+    return Response(
+        content=generate_latest(REGISTRY),
+        media_type="text/plain; version=0.0.4"
+    )
 
 
 @app.on_event("startup")
@@ -123,6 +181,7 @@ def list_habits(
 
 @app.post("/habits", response_model=HabitResponse, status_code=201)
 def create_habit(payload: HabitCreate, db: Session = Depends(get_db)):
+    from .metrics import habits_created_total
     db_habit = Habit(
         name=payload.name,
         description=payload.description,
@@ -132,6 +191,7 @@ def create_habit(payload: HabitCreate, db: Session = Depends(get_db)):
     db.add(db_habit)
     db.commit()
     db.refresh(db_habit)
+    habits_created_total.inc()
     return db_habit
 
 
@@ -149,6 +209,7 @@ async def track_habit(
     payload: TrackRequest,
     db: Session = Depends(get_db)
 ):
+    from .metrics import habit_logs_created_total
     habit = db.query(Habit).filter(Habit.id == habit_id).first()
     if not habit:
         raise HTTPException(status_code=404, detail="Habit not found")
@@ -175,6 +236,7 @@ async def track_habit(
             mood=payload.mood
         )
         db.add(new_log)
+        habit_logs_created_total.inc()
 
     db.commit()
     return TrackResponse(habit_id=habit_id, date=track_date, done=payload.done)

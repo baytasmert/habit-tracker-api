@@ -52,7 +52,19 @@
       "Bash(docker run *)",
       "Bash(curl -s http://localhost:4566/_localstack/health)",
       "Bash(docker stop *)",
-      "Bash(docker rm *)"
+      "Bash(docker rm *)",
+      "Bash(python -m uvicorn src.main:app --reload --port 8000)",
+      "Bash(curl -s http://localhost:8000/health)",
+      "Bash(pkill -f \"uvicorn src.main:app\")",
+      "Bash(pip install *)",
+      "Bash(python -c \"from src.main import app; print\\('App loaded successfully'\\)\")",
+      "Bash(curl -s http://localhost:8001/health)",
+      "PowerShell(tail -30)",
+      "PowerShell(docker-compose down)",
+      "Bash(python -c \"from src.main import app; print\\('✅ App imported'\\); print\\(f'Routes: {len\\(app.routes\\)}'\\)\")",
+      "Bash(python -c \"from src.main import app; print\\('App imported successfully'\\); print\\(f'Routes: {len\\(app.routes\\)}'\\)\")",
+      "Bash(python -m uvicorn src.main:app --host 127.0.0.1 --port 8000)",
+      "Bash(curl -s http://127.0.0.1:8000/health)"
     ]
   }
 }

@@ -31,7 +31,9 @@ spec:
     spec:
       containers:
       - name: habit-tracker
-        image: ghcr.io/kulo/habit_tracker_api-1:latest
+        image: ghcr.io/kulo/habit-tracker-api-1:latest
+        imagePullPolicy: IfNotPresent
+        command: ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000"]
         ports:
         - containerPort: 8000
         env:

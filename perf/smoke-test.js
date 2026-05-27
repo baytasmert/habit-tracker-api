@@ -23,8 +23,33 @@ export default function () {
   });
   sleep(1);
 
-  // 2. List habits (basic connectivity)
-  const listRes = http.get(`${BASE_URL}/habits`);
+  // 2. Register/Login (get auth token)
+  const username = `user_${Math.random()}`;
+  const credentials = JSON.stringify({
+    username: username,
+    password: 'test123',
+  });
+
+  const registerRes = http.post(`${BASE_URL}/register`, credentials, {
+    headers: { 'Content-Type': 'application/json' },
+  });
+
+  let token = null;
+  if (registerRes.status === 201) {
+    const loginRes = http.post(`${BASE_URL}/login`, credentials, {
+      headers: { 'Content-Type': 'application/json' },
+    });
+    if (loginRes.status === 200) {
+      const body = JSON.parse(loginRes.body);
+      token = body.access_token;
+    }
+  }
+
+  const authHeader = token ? { 'Authorization': `Bearer ${token}` } : {};
+  sleep(1);
+
+  // 3. List habits (with auth)
+  const listRes = http.get(`${BASE_URL}/habits`, { headers: authHeader });
   check(listRes, {
     'list habits returns 200': (r) => r.status === 200,
   });

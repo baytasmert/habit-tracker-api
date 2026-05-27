@@ -20,7 +20,7 @@ export const options = {
 };
 
 export default function () {
-  // Realistic user workflow: health check → create habit → list → get → update → delete
+  // Realistic user workflow: health check → login → create habit → list → get → update → delete
 
   // 1. Health check
   const healthRes = http.get(`${BASE_URL}/health`);
@@ -29,7 +29,41 @@ export default function () {
   });
   sleep(Math.random() * 2 + 1); // 1-3s think time
 
-  // 2. Create a new habit
+  // 2. Login (get auth token)
+  const loginPayload = JSON.stringify({
+    username: `user_${Math.random()}`,
+    password: 'test123',
+  });
+
+  const loginRes = http.post(`${BASE_URL}/login`, loginPayload, {
+    headers: { 'Content-Type': 'application/json' },
+  });
+
+  let token = null;
+  if (loginRes.status === 401) {
+    // User doesn't exist, register first
+    const registerRes = http.post(`${BASE_URL}/register`, loginPayload, {
+      headers: { 'Content-Type': 'application/json' },
+    });
+    if (registerRes.status === 201) {
+      // Now login
+      const retryLoginRes = http.post(`${BASE_URL}/login`, loginPayload, {
+        headers: { 'Content-Type': 'application/json' },
+      });
+      if (retryLoginRes.status === 200) {
+        const body = JSON.parse(retryLoginRes.body);
+        token = body.access_token;
+      }
+    }
+  } else if (loginRes.status === 200) {
+    const body = JSON.parse(loginRes.body);
+    token = body.access_token;
+  }
+
+  const authHeader = token ? { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' } : { 'Content-Type': 'application/json' };
+  sleep(Math.random() * 2 + 1);
+
+  // 4. Create a new habit
   const habitPayload = JSON.stringify({
     name: `Habit ${Math.random()}`,
     description: 'Test habit for performance testing',
@@ -37,7 +71,7 @@ export default function () {
   });
 
   const createRes = http.post(`${BASE_URL}/habits`, habitPayload, {
-    headers: { 'Content-Type': 'application/json' },
+    headers: authHeader,
   });
   check(createRes, {
     'create habit status 200': (r) => r.status === 200 || r.status === 201,
@@ -56,32 +90,32 @@ export default function () {
     }
   }
 
-  // 3. List all habits
-  const listRes = http.get(`${BASE_URL}/habits`);
+  // 5. List all habits
+  const listRes = http.get(`${BASE_URL}/habits`, { headers: authHeader });
   check(listRes, {
     'list habits status 200': (r) => r.status === 200,
     'list habits response time': (r) => r.timings.duration < 500,
   });
   sleep(Math.random() * 2 + 1);
 
-  // 4. Get specific habit (if we have ID)
+  // 6. Get specific habit (if we have ID)
   if (habitId) {
-    const getRes = http.get(`${BASE_URL}/habits/${habitId}`);
+    const getRes = http.get(`${BASE_URL}/habits/${habitId}`, { headers: authHeader });
     check(getRes, {
       'get habit status': (r) => r.status === 200 || r.status === 404,
       'get habit response time': (r) => r.timings.duration < 500,
     });
     sleep(Math.random() * 2 + 1);
 
-    // 5. Update habit
+    // 7. Update habit
     const updatePayload = JSON.stringify({
       name: `Updated Habit ${Math.random()}`,
       description: 'Updated for performance test',
       frequency: 'weekly',
     });
 
-    const updateRes = http.put(`${BASE_URL}/habits/${habitId}`, updatePayload, {
-      headers: { 'Content-Type': 'application/json' },
+    const updateRes = http.patch(`${BASE_URL}/habits/${habitId}`, updatePayload, {
+      headers: authHeader,
     });
     check(updateRes, {
       'update habit status': (r) => r.status === 200 || r.status === 404,
@@ -89,8 +123,8 @@ export default function () {
     });
     sleep(Math.random() * 2 + 1);
 
-    // 6. Delete habit
-    const deleteRes = http.del(`${BASE_URL}/habits/${habitId}`);
+    // 8. Delete habit
+    const deleteRes = http.del(`${BASE_URL}/habits/${habitId}`, null, { headers: authHeader });
     check(deleteRes, {
       'delete habit status': (r) => r.status === 200 || r.status === 204 || r.status === 404,
       'delete habit response time': (r) => r.timings.duration < 500,

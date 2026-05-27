@@ -10,6 +10,8 @@ metadata:
   name: habit-tracker-config
   namespace: default
 data:
+  # 🔌 API Konfigürasyonu
+  PORT: "8000"
   # 🗄️ Database Konfigürasyonu
   DATABASE_URL: "postgresql://user:password@postgres-service:5432/habits"
   DB_HOST: "postgres-service"

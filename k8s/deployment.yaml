@@ -18,7 +18,6 @@ spec:
       - name: habit-tracker
         image: ghcr.io/baytasmert/habit-tracker-api:latest
         imagePullPolicy: Always
-        command: ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000"]
         ports:
         - containerPort: 8000
         envFrom:

@@ -13,7 +13,7 @@ os.environ["DATABASE_URL"] = database_url
 
 from src.main import app
 from src.database import Base, get_db
-from tests.factories import HabitFactory, HabitLogFactory
+from tests.factories import UserFactory, HabitFactory, HabitLogFactory
 
 # Create test engine that connects to PostgreSQL
 test_engine = create_engine(
@@ -37,6 +37,7 @@ def db():
 
     # Set factory session for this test
     factory.Factory._meta.sqlalchemy_session = session
+    UserFactory._meta.sqlalchemy_session = session
     HabitFactory._meta.sqlalchemy_session = session
     HabitLogFactory._meta.sqlalchemy_session = session
 

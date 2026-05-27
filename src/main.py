@@ -1,4 +1,5 @@
 import logging
+import os
 import uuid
 import time
 from fastapi import FastAPI, Depends, HTTPException, Form, File, UploadFile, Request
@@ -24,16 +25,41 @@ from .auth import (
 )
 from .metrics import http_requests_total, http_request_duration_seconds
 
-# OpenTelemetry Setup - disabled to avoid dependency issues
-import os
+# OpenTelemetry Setup with OTLP gRPC exporter for Jaeger
 from opentelemetry import trace as otel_trace
 from opentelemetry.sdk.trace import TracerProvider
+from opentelemetry.sdk.trace.export import SimpleSpanProcessor
+from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
 from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
 from opentelemetry.instrumentation.sqlalchemy import SQLAlchemyInstrumentor
 
-# Use no-op provider when Jaeger tracing is disabled
-trace_provider = TracerProvider()
-otel_trace.set_tracer_provider(trace_provider)
+traces_exporter = os.getenv("OTEL_TRACES_EXPORTER", "otlp")
+print(f"[OTEL] OTEL_TRACES_EXPORTER={traces_exporter}", flush=True)
+
+if traces_exporter.lower() != "none":
+    jaeger_host = os.getenv("JAEGER_HOST", "localhost")
+    jaeger_port = int(os.getenv("OTEL_EXPORTER_OTLP_ENDPOINT", "localhost:4317").split(":")[-1])
+    print(f"[OTEL] Initializing OTLP gRPC exporter: {jaeger_host}:{jaeger_port}", flush=True)
+
+    try:
+        otlp_exporter = OTLPSpanExporter(
+            endpoint=f"grpc://{jaeger_host}:4317",
+            insecure=True,
+        )
+        trace_provider = TracerProvider()
+        trace_provider.add_span_processor(SimpleSpanProcessor(otlp_exporter))
+        otel_trace.set_tracer_provider(trace_provider)
+        print(f"[OTEL] OTLP gRPC exporter configured successfully: grpc://{jaeger_host}:4317", flush=True)
+    except Exception as e:
+        print(f"[OTEL] Failed to configure OTLP exporter: {e}, using no-op tracer", flush=True)
+        import traceback
+        traceback.print_exc()
+        trace_provider = TracerProvider()
+        otel_trace.set_tracer_provider(trace_provider)
+else:
+    print("[OTEL] Tracing disabled (OTEL_TRACES_EXPORTER=none)", flush=True)
+    trace_provider = TracerProvider()
+    otel_trace.set_tracer_provider(trace_provider)
 
 logger = logging.getLogger(__name__)
 limiter = Limiter(key_func=get_remote_address)

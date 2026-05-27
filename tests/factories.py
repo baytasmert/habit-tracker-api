@@ -2,17 +2,29 @@ import factory
 from factory import fuzzy
 from faker import Faker
 from datetime import date, timedelta
-from src.models import Habit, HabitLog
+from src.models import User, Habit, HabitLog
+from src.auth import hash_password
 
 fake = Faker()
 
 CATEGORIES = ["health", "productivity", "fitness", "learning", "other"]
 
 
+class UserFactory(factory.alchemy.SQLAlchemyModelFactory):
+    class Meta:
+        model = User
+
+    username = factory.LazyFunction(lambda: fake.user_name())
+    email = factory.LazyFunction(lambda: fake.email())
+    hashed_password = factory.LazyFunction(lambda: hash_password("test123"))
+    created_at = factory.LazyFunction(lambda: fake.date_object())
+
+
 class HabitFactory(factory.alchemy.SQLAlchemyModelFactory):
     class Meta:
         model = Habit
 
+    user = factory.SubFactory(UserFactory)
     name = factory.LazyFunction(lambda: fake.word())
     description = factory.LazyFunction(lambda: fake.sentence())
     category = fuzzy.FuzzyChoice(CATEGORIES)

@@ -29,18 +29,17 @@ import os
 from opentelemetry import trace as otel_trace
 from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import BatchSpanProcessor
-from opentelemetry.exporter.jaeger.grpc import JaegerExporter
+from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
 from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
 from opentelemetry.instrumentation.sqlalchemy import SQLAlchemyInstrumentor
 
-# Jaeger Exporter with gRPC (disabled if OTEL_TRACES_EXPORTER=none)
+# OTLP Exporter with gRPC (disabled if OTEL_TRACES_EXPORTER=none)
 trace_provider = TracerProvider()
 if os.getenv("OTEL_TRACES_EXPORTER", "jaeger") != "none":
-    jaeger_exporter = JaegerExporter(
-        agent_host_name="jaeger",
-        agent_port=14250,  # gRPC port (was 6831 for UDP Thrift)
+    otlp_exporter = OTLPSpanExporter(
+        endpoint="http://jaeger:4317",  # Jaeger OTLP gRPC endpoint
     )
-    trace_provider.add_span_processor(BatchSpanProcessor(jaeger_exporter))
+    trace_provider.add_span_processor(BatchSpanProcessor(otlp_exporter))
 otel_trace.set_tracer_provider(trace_provider)
 
 logger = logging.getLogger(__name__)

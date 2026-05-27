@@ -139,33 +139,6 @@ jobs:
   deploy-and-test:
     runs-on: ubuntu-latest
     needs: build
-    services:
-      # 🐘 PostgreSQL Container (5432)
-      # K8s pods içindeki app bu database'e erişiyor
-      postgres:
-        image: postgres:16
-        env:
-          POSTGRES_USER: user
-          POSTGRES_PASSWORD: password
-          POSTGRES_DB: habits
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 5432:5432
-
-      # 📦 LocalStack Container (4566)
-      # K8s pods içindeki app S3'e bu endpoint'ten erişiyor
-      # Digest hash kullanılıyor: 2.0.2 version'ını kesin belirt
-      localstack:
-        image: localstack/localstack@sha256:2b4ec60261238bfc9573193380724ed4b9ee9fa0f39726275cd8feb48a254219
-        env:
-          SERVICES: s3
-          DEBUG: 1
-        ports:
-          - 4566:4566
 
     steps:
       - uses: actions/checkout@v4
@@ -195,9 +168,11 @@ jobs:
 
       - name: Deploy to Kind cluster
         run: |
-          kubectl apply -f k8s/deployment.yaml
-          kubectl apply -f k8s/service.yaml
+          kubectl apply -f k8s/postgres.yaml
+          kubectl rollout status deployment/postgres -n default --timeout=2m
           kubectl apply -f k8s/configmap.yaml
+          kubectl apply -f k8s/service.yaml
+          kubectl apply -f k8s/deployment.yaml
           kubectl rollout status deployment/habit-tracker-api -n default --timeout=5m
 
       - name: Wait for pod readiness

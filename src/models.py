@@ -21,7 +21,7 @@ class Habit(Base):
     __tablename__ = "habits"
 
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
     name = Column(String, nullable=False)
     description = Column(String, nullable=True)
     category = Column(String, default="other")
@@ -51,7 +51,7 @@ class HabitLog(Base):
     __tablename__ = "habit_logs"
 
     id = Column(Integer, primary_key=True, index=True)
-    habit_id = Column(Integer, ForeignKey("habits.id"), nullable=False)
+    habit_id = Column(Integer, ForeignKey("habits.id"), nullable=False, index=True)
     log_date = Column(Date, nullable=False)
     done = Column(Boolean, default=False)
     duration = Column(Integer, nullable=True)

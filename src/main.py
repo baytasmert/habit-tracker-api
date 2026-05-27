@@ -149,6 +149,8 @@ def get_metrics():
 
 @app.on_event("startup")
 def startup():
+    # Fresh start: drop all tables and recreate (safe for dev/test)
+    Base.metadata.drop_all(bind=engine)
     Base.metadata.create_all(bind=engine)
 
 

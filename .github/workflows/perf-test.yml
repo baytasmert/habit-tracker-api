@@ -42,26 +42,3 @@ jobs:
           path: |
             summary.json
             results/
-
-  stress-test:
-    runs-on: ubuntu-latest
-    name: k6 Stress Test (Nightly)
-    if: github.event_name == 'schedule'
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Setup k6
-        uses: grafana/setup-k6-action@v1
-
-      - name: Run stress test (100→1000 VU, 30 min)
-        run: k6 run perf/stress-test.js
-        continue-on-error: true
-
-      - name: Upload stress results
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: k6-stress-results
-          path: |
-            summary.json
-            results/

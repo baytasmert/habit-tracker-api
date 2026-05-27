@@ -40,27 +40,43 @@ export default function () {
   });
 
   let token = null;
+  let authUsername = JSON.parse(loginPayload).username;
+
   if (loginRes.status === 401) {
     // User doesn't exist, register first
     const registerRes = http.post(`${BASE_URL}/register`, loginPayload, {
       headers: { 'Content-Type': 'application/json' },
     });
-    if (registerRes.status === 201) {
+
+    if (registerRes.status === 201 || registerRes.status === 200) {
       // Now login
       const retryLoginRes = http.post(`${BASE_URL}/login`, loginPayload, {
         headers: { 'Content-Type': 'application/json' },
       });
       if (retryLoginRes.status === 200) {
-        const body = JSON.parse(retryLoginRes.body);
-        token = body.access_token;
+        try {
+          const body = JSON.parse(retryLoginRes.body);
+          token = body.access_token;
+        } catch (e) {
+          console.log(`Failed to parse login response for ${authUsername}: ${retryLoginRes.body}`);
+        }
       }
     }
   } else if (loginRes.status === 200) {
-    const body = JSON.parse(loginRes.body);
-    token = body.access_token;
+    try {
+      const body = JSON.parse(loginRes.body);
+      token = body.access_token;
+    } catch (e) {
+      console.log(`Failed to parse login response for ${authUsername}: ${loginRes.body}`);
+    }
   }
 
-  const authHeader = token ? { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' } : { 'Content-Type': 'application/json' };
+  // If auth failed, skip to next iteration
+  if (!token) {
+    return;
+  }
+
+  const authHeader = { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' };
   sleep(Math.random() * 2 + 1);
 
   // 4. Create a new habit

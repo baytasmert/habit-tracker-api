@@ -64,7 +64,12 @@
       "Bash(python -c \"from src.main import app; print\\('✅ App imported'\\); print\\(f'Routes: {len\\(app.routes\\)}'\\)\")",
       "Bash(python -c \"from src.main import app; print\\('App imported successfully'\\); print\\(f'Routes: {len\\(app.routes\\)}'\\)\")",
       "Bash(python -m uvicorn src.main:app --host 127.0.0.1 --port 8000)",
-      "Bash(curl -s http://127.0.0.1:8000/health)"
+      "Bash(curl -s http://127.0.0.1:8000/health)",
+      "Bash(git pull *)",
+      "PowerShell(choco install k6 -y)",
+      "PowerShell(scoop install k6)",
+      "PowerShell(C:\\\\temp\\\\k6\\\\k6.exe version)",
+      "Read(//c/temp/k6/**)"
     ]
   }
 }

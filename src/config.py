@@ -4,8 +4,19 @@ Supports: local, docker, minikube
 """
 
 from pydantic_settings import BaseSettings
+from pydantic import field_validator
 from functools import lru_cache
 import os
+from pathlib import Path
+
+# Determine which .env file to load based on APP_ENV
+app_env = os.getenv("APP_ENV", "local")
+env_file_map = {
+    "local": ".env.local",
+    "docker": ".env.docker",
+    "minikube": ".env.minikube"
+}
+env_file = env_file_map.get(app_env, ".env.local")
 
 
 class Settings(BaseSettings):
@@ -13,7 +24,7 @@ class Settings(BaseSettings):
 
     # Application
     APP_NAME: str = "Habit Tracker"
-    APP_ENV: str = os.getenv("APP_ENV", "local")
+    APP_ENV: str = app_env
     DEBUG: bool = os.getenv("DEBUG", "false").lower() == "true"
 
     # Database
@@ -40,6 +51,11 @@ class Settings(BaseSettings):
     API_HOST: str = "0.0.0.0"
     API_PORT: int = 8000
     API_RELOAD: bool = False
+    API_INTERNAL_URL: str = "http://localhost:8000"
+    API_EXTERNAL_URL: str = "http://localhost:8001"
+
+    # Frontend access to API (for nginx proxy)
+    API_URL: str = "http://localhost:8000"
 
     # Monitoring
     JAEGER_HOST: str
@@ -49,8 +65,23 @@ class Settings(BaseSettings):
     # Frontend URLs (for CORS, redirects, etc.)
     FRONTEND_URL: str = "http://localhost:8001"
 
+    # Service URLs for monitoring dashboard
+    PROMETHEUS_URL: str = "http://prometheus:9090"
+    GRAFANA_URL: str = "http://grafana:3000"
+    JAEGER_URL: str = "http://jaeger:16686"
+    S3_URL: str = "http://localstack:4566"
+    ARGOCD_URL: str = "http://argocd:8080"
+
+    @field_validator('API_RELOAD', 'ENABLE_TRACING', mode='before')
+    @classmethod
+    def parse_bool_string(cls, v):
+        """Convert string boolean values to bool-compatible"""
+        if isinstance(v, str):
+            return v.lower() in ('true', '1', 'yes', 'on')
+        return v
+
     class Config:
-        env_file = ".env"
+        env_file = env_file
         env_file_encoding = "utf-8"
         case_sensitive = True
 
@@ -61,18 +92,7 @@ def get_settings() -> Settings:
     return Settings()
 
 
-def get_config_file() -> str:
-    """Get the appropriate .env file based on APP_ENV"""
-    app_env = os.getenv("APP_ENV", "local")
-
-    env_files = {
-        "local": ".env.local",
-        "docker": ".env.docker",
-        "minikube": ".env.minikube"
-    }
-
-    return env_files.get(app_env, ".env")
-
-
 # Load settings
 settings = get_settings()
+
+print(f"[CONFIG] Loaded settings from: {env_file} (APP_ENV={app_env})", flush=True)

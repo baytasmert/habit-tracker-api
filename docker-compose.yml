@@ -1,22 +1,48 @@
 services:
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    container_name: habit-tracker-frontend
+    ports:
+      - "8001:3000"
+    volumes:
+      - ./static:/usr/share/nginx/html/static:ro
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    environment:
+      - NGINX_HOST=localhost
+      - NGINX_PORT=3000
+
   api:
     build: .
     container_name: habit-tracker-api
     ports:
-      - "8001:8000"
+      - "8000:8000"
+    expose:
+      - "8000"
     volumes:
       - ./src:/app/src
       - ./templates:/app/templates
       - ./static:/app/static
     environment:
+      - APP_ENV=docker
       - DATABASE_URL=${DATABASE_URL}
       - DB_HOST=${DB_HOST}
       - AWS_ENDPOINT_URL=${AWS_ENDPOINT_URL}
       - AWS_REGION=${AWS_REGION}
       - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
       - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - AWS_S3_BUCKET=${AWS_S3_BUCKET}
+      - SECRET_KEY=${SECRET_KEY}
       - JAEGER_HOST=jaeger
       - JAEGER_PORT=6831
+      - ENABLE_TRACING=${ENABLE_TRACING}
+      - PROMETHEUS_URL=${PROMETHEUS_URL}
+      - GRAFANA_URL=${GRAFANA_URL}
+      - JAEGER_URL=${JAEGER_URL}
+      - S3_URL=${S3_URL}
+      - ARGOCD_URL=${ARGOCD_URL}
+      - API_RELOAD=${API_RELOAD}
     depends_on:
       - db
       - localstack
@@ -97,7 +123,20 @@ services:
     depends_on:
       - prometheus
 
+  # ArgoCD - Optional (ARM uyumluluğu sorunu nedeniyle devre dışı)
+  # argocd:
+  #   image: argoproj/argocd:latest
+  #   container_name: habit-tracker-argocd
+  #   ports:
+  #     - "8080:8080"
+  #     - "8443:8443"
+  #   environment:
+  #     - ARGOCD_SERVER_INSECURE=true
+  #   volumes:
+  #     - argocd_data:/var/lib/argocd
+
 volumes:
   postgres_data:
   prometheus_data:
   grafana_data:
+  # argocd_data:

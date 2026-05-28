@@ -6,7 +6,12 @@ from typing import Optional
 class HabitCreate(BaseModel):
     name: str
     description: Optional[str] = None
+    habit_type: str = "daily"
+    is_negative: bool = False
     goal_days_per_week: Optional[int] = 7
+    goal_count: Optional[int] = None
+    target_duration: Optional[int] = None
+    tags: Optional[str] = None
 
 
 class HabitResponse(BaseModel):
@@ -16,7 +21,13 @@ class HabitResponse(BaseModel):
     name: str
     description: Optional[str]
     category: str
+    habit_type: str
+    is_negative: bool
     goal_days_per_week: int
+    goal_count: Optional[int]
+    target_duration: Optional[int]
+    tags: Optional[str]
+    image_url: Optional[str]
     created_at: date
     tracked_days: int
 
@@ -27,6 +38,7 @@ class TrackRequest(BaseModel):
     duration: Optional[int] = None
     notes: Optional[str] = None
     mood: Optional[int] = None
+    mood_emoji: Optional[str] = None
 
 
 class TrackResponse(BaseModel):

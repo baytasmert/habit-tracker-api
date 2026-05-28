@@ -94,9 +94,17 @@ FastAPIInstrumentor.instrument_app(app)
 # Database Instrumentation (OTel)
 SQLAlchemyInstrumentor().instrument(engine=engine)
 
+cors_origins = [
+    "http://localhost:8001",
+    "http://localhost:3000",
+    "http://api:8000",
+    "http://frontend:3000",
+    f"http://{settings.API_EXTERNAL_URL.replace('http://', '')}",
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=cors_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -157,11 +165,17 @@ async def add_trace_id_and_timing(request: Request, call_next):
 
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    errors = []
+    for error in exc.errors():
+        error_dict = {k: v for k, v in error.items() if k in ["type", "loc", "msg"]}
+        error_dict["loc"] = list(error.get("loc", []))
+        errors.append(error_dict)
+
     return JSONResponse(
         status_code=422,
         content={
             "detail": "Validation error",
-            "errors": exc.errors(),
+            "errors": errors,
             "trace_id": getattr(request.state, "trace_id", "unknown")
         }
     )
@@ -183,39 +197,45 @@ async def admin_health(current_user: User = Depends(get_current_user)):
     services = [
         {
             "name": "api",
-            "url": "http://localhost:8000/health",
+            "url": f"{settings.API_INTERNAL_URL}/health",
             "display_name": "API Server",
-            "local_url": "http://localhost:8001"
+            "service_url": f"{settings.API_EXTERNAL_URL}"
         },
         {
             "name": "db",
-            "url": "postgresql://user:password@db:5432/habits",
+            "url": settings.DATABASE_URL,
             "display_name": "PostgreSQL Database",
             "check_type": "postgres"
         },
         {
             "name": "prometheus",
-            "url": "http://prometheus:9090/-/healthy",
+            "url": f"{settings.PROMETHEUS_URL}/-/healthy",
             "display_name": "Prometheus Metrics",
-            "local_url": "http://localhost:9090"
+            "service_url": settings.PROMETHEUS_URL
         },
         {
             "name": "grafana",
-            "url": "http://grafana:3000/api/health",
+            "url": f"{settings.GRAFANA_URL}/api/health",
             "display_name": "Grafana Dashboards",
-            "local_url": "http://localhost:3000"
+            "service_url": settings.GRAFANA_URL
         },
         {
             "name": "jaeger",
-            "url": "http://jaeger:16686/api/services",
+            "url": f"{settings.JAEGER_URL}/api/services",
             "display_name": "Jaeger Tracing",
-            "local_url": "http://localhost:16686"
+            "service_url": settings.JAEGER_URL
         },
         {
             "name": "s3",
-            "url": "http://localstack:4566/_localstack/health",
+            "url": f"{settings.S3_URL}/_localstack/health",
             "display_name": "LocalStack (S3)",
-            "local_url": "http://localhost:4566"
+            "service_url": settings.S3_URL
+        },
+        {
+            "name": "argocd",
+            "url": f"{settings.ARGOCD_URL}/api/version",
+            "display_name": "ArgoCD",
+            "service_url": settings.ARGOCD_URL
         }
     ]
 
@@ -231,7 +251,7 @@ async def admin_health(current_user: User = Depends(get_current_user)):
                     "status": "healthy",
                     "message": "Connected",
                     "display_name": service["display_name"],
-                    "local_url": service.get("local_url")
+                    "service_url": service.get("service_url")
                 }
             else:
                 async with aiohttp.ClientSession() as session:
@@ -240,14 +260,14 @@ async def admin_health(current_user: User = Depends(get_current_user)):
                             "status": "healthy" if response.status == 200 else "unhealthy",
                             "message": f"Status {response.status}",
                             "display_name": service["display_name"],
-                            "local_url": service.get("local_url")
+                            "service_url": service.get("service_url")
                         }
         except Exception as e:
             results[service["name"]] = {
                 "status": "offline",
                 "message": str(e),
                 "display_name": service["display_name"],
-                "local_url": service.get("local_url")
+                "service_url": service.get("service_url")
             }
 
     return {
@@ -296,10 +316,7 @@ def startup():
 # Frontend Routes (HTML/Template serving)
 @app.get("/")
 def index(request: Request):
-    """Welcome/index page - redirects to /home if authenticated"""
-    token = request.cookies.get("auth_token")
-    if token:
-        return RedirectResponse(url="/home", status_code=302)
+    """Welcome/index page - always show welcome page"""
     return templates.TemplateResponse("index.html", {"request": request})
 
 
@@ -319,6 +336,12 @@ async def habits_page(request: Request):
     if not token:
         return RedirectResponse(url="/login", status_code=302)
     return templates.TemplateResponse("habits.html", {"request": request})
+
+
+@app.get("/tips", response_class=templates.TemplateResponse.__class__)
+async def tips_page(request: Request):
+    """Tips and guidance page - accessible to all"""
+    return templates.TemplateResponse("tips.html", {"request": request})
 
 
 @app.get("/register", response_class=templates.TemplateResponse.__class__)
@@ -437,11 +460,18 @@ def compute_streak(history: dict) -> tuple[int, Optional[date]]:
 @limiter.limit("1000/minute")
 def list_habits(
     request: Request,
+    tag: Optional[str] = None,
+    with_photos: Optional[bool] = False,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     logger.info(f"Fetching habits for user: {current_user.id}")
-    habits = db.query(Habit).filter(Habit.user_id == current_user.id).all()
+    query = db.query(Habit).filter(Habit.user_id == current_user.id)
+
+    if tag:
+        query = query.filter(Habit.tags.ilike(f"%{tag}%"))
+
+    habits = query.all()
     logger.info(f"Retrieved {len(habits)} habits for user: {current_user.id}")
     return habits
 
@@ -457,7 +487,12 @@ def create_habit(
         user_id=current_user.id,
         name=payload.name,
         description=payload.description,
+        habit_type=payload.habit_type,
+        is_negative=payload.is_negative,
         goal_days_per_week=payload.goal_days_per_week,
+        goal_count=payload.goal_count,
+        target_duration=payload.target_duration,
+        tags=payload.tags,
         created_at=date.today()
     )
     db.add(db_habit)
@@ -509,6 +544,7 @@ async def track_habit(
         existing_log.duration = payload.duration
         existing_log.notes = payload.notes
         existing_log.mood = payload.mood
+        existing_log.mood_emoji = payload.mood_emoji
     else:
         new_log = HabitLog(
             habit_id=habit_id,
@@ -516,7 +552,8 @@ async def track_habit(
             done=payload.done,
             duration=payload.duration,
             notes=payload.notes,
-            mood=payload.mood
+            mood=payload.mood,
+            mood_emoji=payload.mood_emoji
         )
         db.add(new_log)
         habit_logs_created_total.inc()
@@ -544,6 +581,44 @@ def get_streak(
         streak_days=streak_days,
         last_tracked=last_tracked
     )
+
+
+@app.get("/analytics/by-tags")
+def get_analytics_by_tags(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Get analytics grouped by tags"""
+    habits = db.query(Habit).filter(Habit.user_id == current_user.id).all()
+
+    tag_stats = {}
+    for habit in habits:
+        if habit.tags:
+            tags = [t.strip() for t in habit.tags.split(",")]
+            for tag in tags:
+                if tag not in tag_stats:
+                    tag_stats[tag] = {
+                        "tag": tag,
+                        "habits_count": 0,
+                        "total_duration": 0,
+                        "successful_days": 0,
+                        "total_days": 0
+                    }
+
+                tag_stats[tag]["habits_count"] += 1
+                total_duration = sum(log.duration or 0 for log in habit.logs)
+                tag_stats[tag]["total_duration"] += total_duration
+                successful = sum(1 for log in habit.logs if log.done)
+                tag_stats[tag]["successful_days"] += successful
+                tag_stats[tag]["total_days"] += len(habit.logs)
+
+    for tag in tag_stats:
+        if tag_stats[tag]["total_days"] > 0:
+            tag_stats[tag]["success_rate"] = tag_stats[tag]["successful_days"] / tag_stats[tag]["total_days"]
+        else:
+            tag_stats[tag]["success_rate"] = 0
+
+    return list(tag_stats.values())
 
 
 @app.delete("/habits/{habit_id}", status_code=204)

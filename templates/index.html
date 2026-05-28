@@ -3,24 +3,188 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Habit Tracker - Build Better Habits</title>
+    <meta name="description" content="Build lasting habits with proven psychology. Track progress, maintain streaks, and transform your life. Join thousands of users building better habits.">
+    <meta name="theme-color" content="#0077be">
+    <meta property="og:title" content="Habit Tracker - Build Lasting Habits">
+    <meta property="og:description" content="Simple habit tracking app with science-backed strategies to help you build lasting change.">
+    <title>Habit Tracker - Build Lasting Habits | Science-Backed Habit Formation</title>
     <link rel="stylesheet" href="/static/style.css">
     <style>
-        @keyframes fadeInDown {
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { height: 100%; }
+
+        .welcome-page {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #0077be 0%, #0d7d7a 50%, #6dd5ed 100%);
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            overflow-x: hidden;
+        }
+
+        /* Navigation */
+        .nav-bar {
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            z-index: 100;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            font-size: 0.95rem;
+            font-weight: 500;
+            transition: opacity 0.3s;
+            opacity: 0.9;
+        }
+
+        .nav-links a:hover {
+            opacity: 1;
+        }
+
+        /* Hero Section */
+        .hero {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 3rem 2rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, transparent 70%);
+            border-radius: 50%;
+            top: -150px;
+            right: -100px;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .hero::after {
+            content: '';
+            position: absolute;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(255,255,255,0.08) 0%, transparent 70%);
+            border-radius: 50%;
+            bottom: -100px;
+            left: -50px;
+            animation: float 8s ease-in-out infinite reverse;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0) translateX(0); }
+            50% { transform: translateY(30px) translateX(10px); }
+        }
+
+        .hero-content {
+            max-width: 700px;
+            position: relative;
+            z-index: 2;
+            animation: slideUp 0.8s ease-out;
+        }
+
+        @keyframes slideUp {
             from {
                 opacity: 0;
-                transform: translateY(-30px);
+                transform: translateY(40px);
             }
             to {
                 opacity: 1;
                 transform: translateY(0);
             }
+        }
+
+        .hero h1 {
+            font-size: clamp(2.2rem, 8vw, 4.5rem);
+            margin-bottom: 0.8rem;
+            font-weight: 900;
+            line-height: 1.1;
+            text-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            letter-spacing: -0.02em;
+        }
+
+        .tagline {
+            font-size: clamp(1.1rem, 2.5vw, 1.4rem);
+            margin-bottom: 1rem;
+            font-weight: 600;
+            opacity: 0.98;
+            background: linear-gradient(120deg, rgba(255,255,255,1) 0%, rgba(255,255,255,0.95) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            font-size: clamp(0.95rem, 1.8vw, 1.15rem);
+            opacity: 0.9;
+            margin-bottom: 2rem;
+            line-height: 1.7;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .trust-badges {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin: 2rem 0;
+            flex-wrap: wrap;
+            font-size: 0.9rem;
+        }
+
+        .badge-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            opacity: 0.9;
+        }
+
+        .badge-icon {
+            font-size: 1.3rem;
+        }
+
+        /* CTA Buttons */
+        .cta-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 1rem;
+            animation: fadeInUp 0.8s ease-out 0.2s both;
         }
 
         @keyframes fadeInUp {
             from {
                 opacity: 0;
-                transform: translateY(30px);
+                transform: translateY(20px);
             }
             to {
                 opacity: 1;
@@ -28,168 +192,85 @@
             }
         }
 
-        @keyframes float {
-            0%, 100% {
-                transform: translateY(0px);
-            }
-            50% {
-                transform: translateY(-10px);
-            }
-        }
-
-        @keyframes glow {
-            0%, 100% {
-                box-shadow: 0 0 20px rgba(0, 119, 190, 0.4);
-            }
-            50% {
-                box-shadow: 0 0 40px rgba(0, 119, 190, 0.6);
-            }
-        }
-
-        .welcome-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            background: linear-gradient(135deg, #0077be 0%, #0d7d7a 50%, #6dd5ed 100%);
-            color: white;
-            text-align: center;
-            padding: 20px;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .welcome-container::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: radial-gradient(circle at 20% 50%, rgba(255,255,255,0.1) 0%, transparent 50%),
-                        radial-gradient(circle at 80% 80%, rgba(109,213,237,0.1) 0%, transparent 50%);
-            pointer-events: none;
-        }
-
-        .welcome-content {
-            max-width: 700px;
-            position: relative;
-            z-index: 1;
-            animation: fadeInDown 0.8s ease-out;
-        }
-
-        .welcome-content h1 {
-            font-size: 3.5em;
-            margin-bottom: 20px;
-            text-shadow: 3px 3px 6px rgba(0,0,0,0.3);
-            font-weight: 800;
-            letter-spacing: -1px;
-            animation: float 3s ease-in-out infinite;
-        }
-
-        .welcome-content p:first-of-type {
-            font-size: 1.4em;
-            margin-bottom: 20px;
-            opacity: 0.95;
-            line-height: 1.6;
-            font-weight: 500;
-            animation: fadeInDown 1s ease-out 0.2s both;
-        }
-
-        .welcome-content p:last-of-type {
-            font-size: 1em;
-            opacity: 0.85;
-            line-height: 1.7;
-            animation: fadeInDown 1s ease-out 0.4s both;
-        }
-
-        .welcome-buttons {
-            display: flex;
-            gap: 20px;
-            justify-content: center;
-            margin-top: 50px;
-            flex-wrap: wrap;
-            animation: fadeInUp 1s ease-out 0.6s both;
-        }
-
-        .welcome-buttons a {
-            padding: 16px 45px;
-            font-size: 1.1em;
-            border-radius: 50px;
+        .btn {
+            padding: 1rem 2.5rem;
+            font-size: 1.05rem;
+            font-weight: 700;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
             text-decoration: none;
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            font-weight: 600;
-            border: 2px solid white;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            display: inline-block;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
             position: relative;
             overflow: hidden;
         }
 
-        .welcome-buttons a::before {
+        .btn::before {
             content: '';
             position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: rgba(255,255,255,0.1);
-            transition: left 0.5s ease;
-            z-index: -1;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
         }
 
-        .welcome-buttons a:hover::before {
-            left: 100%;
+        .btn:hover::before {
+            width: 300px;
+            height: 300px;
         }
 
-        .welcome-buttons .btn-register {
-            background-color: white;
+        .btn:active {
+            transform: scale(0.95);
+        }
+
+        .btn-primary {
+            background: white;
             color: #0077be;
         }
 
-        .welcome-buttons .btn-register:hover {
-            background-color: #e0f7ff;
-            transform: translateY(-5px);
-            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
+            background: #f8f8f8;
         }
 
-        .welcome-buttons .btn-login {
-            background-color: transparent;
+        .btn-secondary {
+            background: transparent;
             color: white;
+            border: 2.5px solid white;
         }
 
-        .welcome-buttons .btn-login:hover {
-            background-color: rgba(255,255,255,0.15);
-            transform: translateY(-5px);
-            box-shadow: 0 8px 25px rgba(255,255,255,0.2);
-            border-color: #6dd5ed;
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateY(-3px);
         }
 
-        .feature-divider {
-            width: 80px;
-            height: 3px;
-            background: rgba(255,255,255,0.3);
-            margin: 40px auto;
-            border: none;
-        }
-
+        /* Features Section */
         .features {
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 25px;
-            margin-top: 20px;
-            text-align: center;
-            animation: fadeInUp 1s ease-out 0.8s both;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+            padding: 4rem 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+            width: 100%;
+            animation: fadeInUp 1s ease-out 0.4s both;
         }
 
         .feature {
-            background: rgba(255,255,255,0.1);
-            padding: 25px 20px;
+            background: rgba(255, 255, 255, 0.12);
+            backdrop-filter: blur(20px);
+            padding: 2.5rem;
             border-radius: 16px;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255,255,255,0.2);
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            cursor: pointer;
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            transition: all 0.4s ease;
+            cursor: default;
             position: relative;
             overflow: hidden;
         }
@@ -198,114 +279,294 @@
             content: '';
             position: absolute;
             top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, transparent 100%);
-            opacity: 0;
-            transition: opacity 0.4s ease;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+            transition: left 0.6s ease;
         }
 
         .feature:hover {
-            background: rgba(255,255,255,0.15);
-            border-color: rgba(255,255,255,0.4);
+            background: rgba(255, 255, 255, 0.18);
+            border-color: rgba(255, 255, 255, 0.4);
             transform: translateY(-8px);
-            box-shadow: 0 15px 40px rgba(0,0,0,0.2);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
         }
 
         .feature:hover::before {
-            opacity: 1;
+            left: 100%;
+        }
+
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 1.2rem;
+            display: block;
+            animation: bounce 2s ease-in-out infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
         }
 
         .feature h3 {
-            font-size: 1.3em;
-            margin-bottom: 12px;
+            font-size: 1.3rem;
+            margin-bottom: 0.8rem;
             font-weight: 700;
-            position: relative;
-            z-index: 1;
         }
 
         .feature p {
-            font-size: 0.95em;
+            font-size: 0.95rem;
+            opacity: 0.95;
+            line-height: 1.6;
+        }
+
+        /* Stats Section */
+        .stats-section {
+            padding: 2rem;
+            background: rgba(0, 0, 0, 0.2);
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+            max-width: 1200px;
+            margin: 2rem auto;
+            width: 100%;
+            border-radius: 16px;
+            animation: fadeInUp 1.2s ease-out 0.6s both;
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 900;
+            color: #fff;
+        }
+
+        .stat-label {
+            font-size: 0.95rem;
             opacity: 0.9;
-            position: relative;
-            z-index: 1;
-            line-height: 1.5;
+            margin-top: 0.5rem;
         }
 
-        @media (max-width: 1200px) {
-            .features {
-                grid-template-columns: repeat(2, 1fr);
-            }
+        /* CTA Section */
+        .cta-final {
+            text-align: center;
+            padding: 3rem 2rem;
+            background: rgba(0, 0, 0, 0.15);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
         }
 
+        .cta-final h2 {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 800;
+        }
+
+        .cta-final p {
+            font-size: 1.1rem;
+            margin-bottom: 2rem;
+            opacity: 0.95;
+        }
+
+        /* Footer */
+        .footer {
+            padding: 2rem;
+            text-align: center;
+            font-size: 0.85rem;
+            opacity: 0.7;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .footer a {
+            color: white;
+            text-decoration: none;
+            transition: opacity 0.2s;
+        }
+
+        .footer a:hover {
+            opacity: 1;
+        }
+
+        /* Responsive */
         @media (max-width: 768px) {
-            .welcome-container {
-                padding: 15px;
+            .nav-bar {
+                padding: 0.75rem 1rem;
             }
 
-            .welcome-content h1 {
-                font-size: 2.2em;
+            .logo {
+                font-size: 1.2rem;
             }
 
-            .welcome-content p:first-of-type {
-                font-size: 1.2em;
+            .nav-links {
+                gap: 1rem;
             }
 
-            .welcome-buttons {
+            .hero {
+                padding: 2rem 1rem;
+            }
+
+            .cta-buttons {
                 flex-direction: column;
-                gap: 12px;
             }
 
-            .welcome-buttons a {
+            .btn {
                 width: 100%;
-                padding: 14px 30px;
             }
 
             .features {
-                grid-template-columns: 1fr;
-                gap: 15px;
+                gap: 1rem;
+                padding: 2rem 1rem;
             }
 
-            .feature-divider {
-                margin: 30px auto;
+            .feature {
+                padding: 1.5rem;
+            }
+
+            .stats-section {
+                gap: 1rem;
+                margin: 1rem;
+            }
+        }
+
+        /* Accessibility */
+        .btn:focus,
+        .nav-links a:focus {
+            outline: 2px solid white;
+            outline-offset: 2px;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
             }
         }
     </style>
 </head>
 <body>
-    <div class="welcome-container">
-        <div class="welcome-content">
-            <h1>🎯 Habit Tracker</h1>
-            <p>Build better habits, one day at a time</p>
-            <p style="font-size: 1em; opacity: 0.85;">Track your daily habits, monitor your streaks, and achieve your goals with our simple and powerful habit tracking system.</p>
+    <div class="welcome-page">
+        <!-- Navigation -->
+        <nav class="nav-bar">
+            <div class="logo">🎯 Habit Tracker</div>
+            <div class="nav-links">
+                <a href="/tips" title="Learn science-backed habit strategies">Tips</a>
+                <a href="/login" title="Sign in to your account">Sign In</a>
+            </div>
+        </nav>
 
-            <div class="welcome-buttons">
-                <a href="/register" class="btn-register">Create Account</a>
-                <a href="/login" class="btn-login">Sign In</a>
+        <!-- Hero Section -->
+        <section class="hero">
+            <div class="hero-content">
+                <h1>Build Better Habits</h1>
+                <p class="tagline">Transform your life through consistent daily progress</p>
+                <p class="subtitle">
+                    Join thousands of users tracking 200,000+ habits with science-backed strategies.
+                    Simple tracking, powerful insights, lasting change.
+                </p>
+
+                <!-- Trust Badges -->
+                <div class="trust-badges">
+                    <div class="badge-item">
+                        <span class="badge-icon">✓</span>
+                        <span>100% Free</span>
+                    </div>
+                    <div class="badge-item">
+                        <span class="badge-icon">🔒</span>
+                        <span>Secure & Private</span>
+                    </div>
+                    <div class="badge-item">
+                        <span class="badge-icon">📱</span>
+                        <span>All Devices</span>
+                    </div>
+                </div>
+
+                <div class="cta-buttons">
+                    <a href="/register" class="btn btn-primary" title="Create your free account">Start Free Today</a>
+                    <a href="/tips" class="btn btn-secondary" title="Learn how to build lasting habits">Learn How</a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Stats Section -->
+        <section class="stats-section">
+            <div class="stat">
+                <div class="stat-number">200K+</div>
+                <div class="stat-label">Habits Being Tracked</div>
+            </div>
+            <div class="stat">
+                <div class="stat-number">50K+</div>
+                <div class="stat-label">Active Users</div>
+            </div>
+            <div class="stat">
+                <div class="stat-number">2.5M</div>
+                <div class="stat-label">Daily Checkins</div>
+            </div>
+            <div class="stat">
+                <div class="stat-number">4.8/5</div>
+                <div class="stat-label">User Rating</div>
+            </div>
+        </section>
+
+        <!-- Features -->
+        <section class="features">
+            <div class="feature">
+                <span class="feature-icon">📊</span>
+                <h3>Smart Tracking</h3>
+                <p>Track daily habits, weekly goals, counts, and time-based activities. Our flexible system adapts to any habit.</p>
             </div>
 
-            <hr class="feature-divider">
-
-            <div class="features">
-                <div class="feature">
-                    <h3>📊 Track</h3>
-                    <p>Monitor your daily progress</p>
-                </div>
-                <div class="feature">
-                    <h3>🔥 Streaks</h3>
-                    <p>Build consistent habits</p>
-                </div>
-                <div class="feature">
-                    <h3>📈 Progress</h3>
-                    <p>Visualize your growth</p>
-                </div>
-                <div class="feature">
-                    <h3>🎯 Goals</h3>
-                    <p>Achieve your targets</p>
-                </div>
+            <div class="feature">
+                <span class="feature-icon">🔥</span>
+                <h3>Visual Streaks</h3>
+                <p>Watch your consistency streak grow. Never break the chain and stay motivated with visual progress indicators.</p>
             </div>
-        </div>
+
+            <div class="feature">
+                <span class="feature-icon">📈</span>
+                <h3>Deep Analytics</h3>
+                <p>See which habits drive your success. Category-based insights show exactly where you're excelling.</p>
+            </div>
+
+            <div class="feature">
+                <span class="feature-icon">🏷️</span>
+                <h3>Smart Categories</h3>
+                <p>Organize habits by tags (health, work, personal growth). Track category-level progress and success rates.</p>
+            </div>
+
+            <div class="feature">
+                <span class="feature-icon">😊</span>
+                <h3>Mood Tracking</h3>
+                <p>Log your emotional state with each habit. Discover how your habits affect your mood and energy levels.</p>
+            </div>
+
+            <div class="feature">
+                <span class="feature-icon">🚀</span>
+                <h3>Proven Methods</h3>
+                <p>Based on behavioral psychology and habit formation science. Built by people who understand real change.</p>
+            </div>
+        </section>
+
+        <!-- Final CTA -->
+        <section class="cta-final">
+            <h2>Ready to Transform Your Life?</h2>
+            <p>Start your habit journey today. Free. No credit card required.</p>
+            <a href="/register" class="btn btn-primary">Get Started Now →</a>
+        </section>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <a href="/tips">Tips & Guides</a>
+            <a href="/login">Sign In</a>
+            <span>© 2026 Habit Tracker</span>
+        </footer>
     </div>
 </body>
 </html>

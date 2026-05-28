@@ -1,0 +1,243 @@
+{
+  "info": {
+    "name": "Habit Tracker API - Updated",
+    "description": "Complete API collection with new habit type and tag features",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"username\": \"testuser\", \"password\": \"testpass123\"}"
+            },
+            "url": {"raw": "{{base_url}}/register", "host": ["{{base_url}}"], "path": ["register"]}
+          }
+        },
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"username\": \"testuser\", \"password\": \"testpass123\"}"
+            },
+            "url": {"raw": "{{base_url}}/login", "host": ["{{base_url}}"], "path": ["login"]}
+          }
+        }
+      ]
+    },
+    {
+      "name": "Habits - Create",
+      "item": [
+        {
+          "name": "Create Daily Habit",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"},
+              {"key": "Authorization", "value": "Bearer {{token}}"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"name\": \"Morning Exercise\", \"description\": \"30 min exercise\", \"habit_type\": \"daily\", \"goal_days_per_week\": 5}"
+            },
+            "url": {"raw": "{{base_url}}/habits", "host": ["{{base_url}}"], "path": ["habits"]}
+          }
+        },
+        {
+          "name": "Create Count Habit",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"},
+              {"key": "Authorization", "value": "Bearer {{token}}"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"name\": \"Read Pages\", \"habit_type\": \"count\", \"goal_count\": 30}"
+            },
+            "url": {"raw": "{{base_url}}/habits", "host": ["{{base_url}}"], "path": ["habits"]}
+          }
+        },
+        {
+          "name": "Create Time Habit",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"},
+              {"key": "Authorization", "value": "Bearer {{token}}"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"name\": \"Meditation\", \"habit_type\": \"time\", \"target_duration\": 20}"
+            },
+            "url": {"raw": "{{base_url}}/habits", "host": ["{{base_url}}"], "path": ["habits"]}
+          }
+        },
+        {
+          "name": "Create Negative Habit (to avoid)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"},
+              {"key": "Authorization", "value": "Bearer {{token}}"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"name\": \"No Smoking\", \"description\": \"Quit smoking\", \"is_negative\": true}"
+            },
+            "url": {"raw": "{{base_url}}/habits", "host": ["{{base_url}}"], "path": ["habits"]}
+          }
+        },
+        {
+          "name": "Create Habit with Tags",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"},
+              {"key": "Authorization", "value": "Bearer {{token}}"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"name\": \"Yoga Session\", \"habit_type\": \"daily\", \"tags\": \"spor,sağlık,mindfulness\"}"
+            },
+            "url": {"raw": "{{base_url}}/habits", "host": ["{{base_url}}"], "path": ["habits"]}
+          }
+        }
+      ]
+    },
+    {
+      "name": "Habits - Get & Filter",
+      "item": [
+        {
+          "name": "Get All Habits",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{token}}"}],
+            "url": {"raw": "{{base_url}}/habits", "host": ["{{base_url}}"], "path": ["habits"]}
+          }
+        },
+        {
+          "name": "Filter Habits by Tag",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{token}}"}],
+            "url": {
+              "raw": "{{base_url}}/habits?tag=spor",
+              "host": ["{{base_url}}"],
+              "path": ["habits"],
+              "query": [{"key": "tag", "value": "spor"}]
+            }
+          }
+        },
+        {
+          "name": "Get Single Habit",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{token}}"}],
+            "url": {"raw": "{{base_url}}/habits/1", "host": ["{{base_url}}"], "path": ["habits", "1"]}
+          }
+        }
+      ]
+    },
+    {
+      "name": "Habits - Track",
+      "item": [
+        {
+          "name": "Track Habit (Basic)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"},
+              {"key": "Authorization", "value": "Bearer {{token}}"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"done\": true}"
+            },
+            "url": {"raw": "{{base_url}}/habits/1/track", "host": ["{{base_url}}"], "path": ["habits", "1", "track"]}
+          }
+        },
+        {
+          "name": "Track Habit (With Duration & Mood)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"},
+              {"key": "Authorization", "value": "Bearer {{token}}"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"done\": true, \"duration\": 45, \"mood_emoji\": \"😊\", \"notes\": \"Great session!\"}"
+            },
+            "url": {"raw": "{{base_url}}/habits/1/track", "host": ["{{base_url}}"], "path": ["habits", "1", "track"]}
+          }
+        },
+        {
+          "name": "Track Negative Habit",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"},
+              {"key": "Authorization", "value": "Bearer {{token}}"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"done\": false, \"mood_emoji\": \"😍\", \"notes\": \"Resisted!\"}"
+            },
+            "url": {"raw": "{{base_url}}/habits/2/track", "host": ["{{base_url}}"], "path": ["habits", "2", "track"]}
+          }
+        }
+      ]
+    },
+    {
+      "name": "Analytics",
+      "item": [
+        {
+          "name": "Get Category Insights (by Tags)",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{token}}"}],
+            "url": {
+              "raw": "{{base_url}}/analytics/by-tags",
+              "host": ["{{base_url}}"],
+              "path": ["analytics", "by-tags"]
+            }
+          }
+        },
+        {
+          "name": "Get Streak",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{token}}"}],
+            "url": {"raw": "{{base_url}}/habits/1/streak", "host": ["{{base_url}}"], "path": ["habits", "1", "streak"]}
+          }
+        }
+      ]
+    },
+    {
+      "name": "Health & Status",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "url": {"raw": "{{base_url}}/health", "host": ["{{base_url}}"], "path": ["health"]}
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {"key": "base_url", "value": "http://localhost:8000"},
+    {"key": "token", "value": ""}
+  ]
+}

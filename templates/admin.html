@@ -19,11 +19,8 @@
 
         <section class="admin-section">
             <h2>Quick Links</h2>
-            <div class="quick-links">
-                <a href="http://localhost:8001/docs" target="_blank" class="btn btn-primary">API Documentation (Swagger)</a>
-                <a href="http://localhost:3000" target="_blank" class="btn btn-primary">Grafana Dashboards</a>
-                <a href="http://localhost:9090" target="_blank" class="btn btn-primary">Prometheus Metrics</a>
-                <a href="http://localhost:16686" target="_blank" class="btn btn-primary">Jaeger Tracing</a>
+            <div class="quick-links" id="quickLinks">
+                <p class="loading">Loading quick links...</p>
             </div>
         </section>
 
@@ -83,8 +80,8 @@ async function checkHealth() {
                     <p class="health-message">${service.message}</p>
             `;
 
-            if (service.local_url) {
-                cardHtml += `<a href="${service.local_url}" target="_blank" class="btn btn-small btn-outline">Open</a>`;
+            if (service.service_url) {
+                cardHtml += `<a href="${service.service_url}" target="_blank" class="btn btn-small btn-outline">Open</a>`;
             }
 
             cardHtml += '</div>';
@@ -92,10 +89,36 @@ async function checkHealth() {
         }
 
         healthGrid.innerHTML = html;
+
+        // Generate quick links
+        generateQuickLinks(data.services);
     } catch (error) {
         console.error('Health check error:', error);
         document.getElementById('healthStatus').innerHTML = `<p class="error">Error: ${error.message}</p>`;
     }
+}
+
+function generateQuickLinks(services) {
+    const quickLinks = document.getElementById('quickLinks');
+    let linksHtml = '';
+
+    const linkServices = [
+        { key: 'api', label: 'API Documentation (Swagger)', suffix: '/docs' },
+        { key: 'grafana', label: 'Grafana Dashboards' },
+        { key: 'prometheus', label: 'Prometheus Metrics' },
+        { key: 'jaeger', label: 'Jaeger Tracing' },
+        { key: 'argocd', label: 'ArgoCD' },
+        { key: 's3', label: 'LocalStack (S3)' }
+    ];
+
+    linkServices.forEach(link => {
+        if (services[link.key] && services[link.key].service_url) {
+            const url = link.suffix ? services[link.key].service_url + link.suffix : services[link.key].service_url;
+            linksHtml += `<a href="${url}" target="_blank" class="btn btn-primary">${link.label}</a>`;
+        }
+    });
+
+    quickLinks.innerHTML = linksHtml;
 }
 
 async function loadStatistics() {

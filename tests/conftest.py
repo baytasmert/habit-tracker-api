@@ -39,8 +39,12 @@ def setup_test_db(request):
         return
 
     try:
+        # Drop all tables first to ensure clean schema
+        Base.metadata.drop_all(bind=test_engine)
+        # Create fresh tables with current schema
         Base.metadata.create_all(bind=test_engine)
         yield
+        # Cleanup after tests
         Base.metadata.drop_all(bind=test_engine)
     except Exception as e:
         # If database setup fails, just skip

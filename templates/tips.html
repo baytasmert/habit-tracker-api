@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Learn science-backed strategies to build lasting habits. Expert tips on habit formation, common mistakes, and proven methods.">
+    <title>Habit Formation Guide - Science-Backed Strategies</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        .tips-page {
+            background: #f8f9fa;
+            color: #333;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+        }
+
+        .tips-hero {
+            background: linear-gradient(135deg, #0077be 0%, #0d7d7a 50%, #6dd5ed 100%);
+            color: white;
+            padding: 4rem 2rem;
+            text-align: center;
+        }
+
+        .tips-hero-content {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .tips-hero h1 {
+            font-size: clamp(2rem, 6vw, 3rem);
+            margin-bottom: 1rem;
+            font-weight: 900;
+        }
+
+        .tips-hero .lead {
+            font-size: 1.3rem;
+            margin-bottom: 0.5rem;
+            opacity: 0.95;
+        }
+
+        .tips-hero .description {
+            font-size: 1.1rem;
+            opacity: 0.85;
+            line-height: 1.6;
+        }
+
+        .quick-nav {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            padding: 2rem;
+            flex-wrap: wrap;
+            background: white;
+            border-bottom: 1px solid #eee;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+
+        .nav-link {
+            padding: 0.75rem 1.5rem;
+            background: #f0f0f0;
+            color: #0077be;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .nav-link:hover {
+            background: #0077be;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .tips-section {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 4rem 2rem;
+            border-bottom: 1px solid #eee;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .section-icon {
+            font-size: 3rem;
+            display: block;
+            margin-bottom: 1rem;
+        }
+
+        .section-header h2 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            color: #0077be;
+        }
+
+        .section-header p {
+            font-size: 1.1rem;
+            color: #666;
+        }
+
+        .tip-content {
+            display: grid;
+            gap: 2rem;
+        }
+
+        .tip-card {
+            background: white;
+            padding: 2.5rem;
+            border-radius: 12px;
+            border-left: 4px solid #0077be;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+
+        .tip-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.12);
+        }
+
+        .tip-card.spotlight {
+            background: linear-gradient(135deg, rgba(0,119,190,0.05) 0%, rgba(109,213,237,0.05) 100%);
+            border: 2px solid #0077be;
+        }
+
+        .tip-card h3 {
+            font-size: 1.4rem;
+            margin-bottom: 1rem;
+            color: #0077be;
+        }
+
+        .tip-card p {
+            margin-bottom: 1rem;
+            color: #555;
+        }
+
+        .description {
+            font-size: 1.05rem;
+            color: #666;
+            margin-bottom: 1.5rem;
+        }
+
+        .habit-loop {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+
+        .loop-step {
+            background: #f0f8ff;
+            padding: 1.5rem;
+            border-radius: 8px;
+            border: 1px solid #0077be;
+            text-align: center;
+        }
+
+        .step-number {
+            background: #0077be;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 0.5rem;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .step-title {
+            font-weight: 700;
+            color: #0077be;
+            margin-bottom: 0.5rem;
+        }
+
+        .loop-step p {
+            font-size: 0.95rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .example {
+            background: white;
+            padding: 0.75rem;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+            color: #333;
+        }
+
+        .loop-arrow {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: #0077be;
+        }
+
+        .key-insight {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 1.5rem;
+            border-radius: 4px;
+            margin: 1.5rem 0;
+        }
+
+        ul, ol {
+            margin-left: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        li {
+            margin-bottom: 0.5rem;
+        }
+
+        strong {
+            color: #0077be;
+        }
+
+        .note {
+            font-size: 0.95rem;
+            color: #666;
+            font-style: italic;
+            margin-top: 0.5rem;
+        }
+
+        .strategy {
+            background: #e8f4f8;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+        }
+
+        .before-after {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin: 1.5rem 0;
+        }
+
+        .before, .after {
+            padding: 1.5rem;
+            border-radius: 8px;
+        }
+
+        .before {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+        }
+
+        .after {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+        }
+
+        .before h4, .after h4 {
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+        }
+
+        .before ul, .after ul {
+            list-style: none;
+            margin: 0;
+        }
+
+        .before li:before {
+            content: "❌ ";
+            margin-right: 0.5rem;
+        }
+
+        .after li:before {
+            content: "✅ ";
+            margin-right: 0.5rem;
+        }
+
+        .insight {
+            background: #e7f3ff;
+            padding: 1rem;
+            border-radius: 6px;
+            margin: 1rem 0;
+            font-size: 0.95rem;
+            border-left: 4px solid #0077be;
+        }
+
+        .formula {
+            background: #fff;
+            border: 2px solid #0077be;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: #0077be;
+            text-align: center;
+        }
+
+        .examples {
+            background: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+        }
+
+        .examples strong {
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+
+        .shift {
+            margin: 1.5rem 0;
+        }
+
+        .comparison {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin: 1rem 0;
+        }
+
+        .goal-focused, .identity-focused {
+            padding: 1rem;
+            border-radius: 6px;
+            background: #f8f9fa;
+        }
+
+        .goal-focused h4, .identity-focused h4 {
+            margin-bottom: 0.75rem;
+            font-size: 1rem;
+        }
+
+        .goal-focused ul, .identity-focused ul {
+            font-size: 0.95rem;
+        }
+
+        .rule {
+            background: #fff3cd;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+            border-left: 4px solid #ffc107;
+        }
+
+        .mistake {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            border-left: 4px solid #e74c3c;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .mistake h3 {
+            color: #e74c3c;
+            margin-bottom: 0.75rem;
+        }
+
+        .action-steps {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+
+        .step {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+            text-align: center;
+        }
+
+        .step-number-large {
+            background: #0077be;
+            color: white;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            font-weight: bold;
+            margin: 0 auto 1rem;
+        }
+
+        .step h3 {
+            color: #0077be;
+            margin-bottom: 0.75rem;
+        }
+
+        .step p {
+            color: #666;
+            font-size: 0.95rem;
+        }
+
+        .start-cta {
+            text-align: center;
+            background: linear-gradient(135deg, rgba(0,119,190,0.1) 0%, rgba(109,213,237,0.1) 100%);
+            padding: 3rem 2rem;
+            border-radius: 12px;
+            margin: 2rem 0;
+        }
+
+        .start-cta h2 {
+            color: #0077be;
+            margin-bottom: 0.5rem;
+        }
+
+        .start-cta p {
+            margin-bottom: 1.5rem;
+        }
+
+        .quote-section {
+            background: white;
+            padding: 3rem 2rem;
+            text-align: center;
+            border-top: 1px solid #eee;
+        }
+
+        blockquote {
+            font-size: 1.4rem;
+            font-weight: 500;
+            color: #0077be;
+            margin-bottom: 1rem;
+            font-style: italic;
+        }
+
+        cite {
+            font-size: 1rem;
+            color: #666;
+            display: block;
+        }
+
+        .quote-explanation {
+            color: #666;
+            margin-top: 1.5rem;
+            font-size: 1rem;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 0.75rem 2rem;
+            margin: 0.5rem;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-primary {
+            background: #0077be;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #005a8f;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: #0077be;
+            border: 2px solid #0077be;
+        }
+
+        .btn-secondary:hover {
+            background: #f0f8ff;
+        }
+
+        @media (max-width: 768px) {
+            .tips-hero {
+                padding: 2rem 1rem;
+            }
+
+            .tips-section {
+                padding: 2rem 1rem;
+            }
+
+            .quick-nav {
+                padding: 1rem;
+                gap: 0.5rem;
+            }
+
+            .nav-link {
+                padding: 0.5rem 1rem;
+                font-size: 0.9rem;
+            }
+
+            .before-after {
+                grid-template-columns: 1fr;
+            }
+
+            .comparison {
+                grid-template-columns: 1fr;
+            }
+
+            .habit-loop {
+                grid-template-columns: 1fr;
+            }
+
+            .loop-arrow {
+                transform: rotate(90deg);
+                margin: -1rem 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="tips-page">
+        <!-- Header -->
+        <section class="tips-hero">
+            <div class="tips-hero-content">
+                <h1>The Science of Habit Formation</h1>
+                <p class="lead">Transform your life through proven strategies</p>
+                <p class="description">
+                    Learn how successful people build lasting habits. Based on behavioral psychology research and proven methods that actually work.
+                </p>
+            </div>
+        </section>
+
+        <!-- Quick Navigation -->
+        <section class="quick-nav">
+            <a href="#psychology" class="nav-link">🧠 Psychology</a>
+            <a href="#strategies" class="nav-link">⚡ Strategies</a>
+            <a href="#mistakes" class="nav-link">⚠️ Mistakes</a>
+            <a href="#action-plan" class="nav-link">🎯 Action Plan</a>
+        </section>
+
+        <!-- Psychology Section -->
+        <section id="psychology" class="tips-section">
+            <div class="section-header">
+                <span class="section-icon">🧠</span>
+                <h2>Understanding Habit Formation</h2>
+                <p>How your brain builds automatic behaviors</p>
+            </div>
+
+            <div class="tip-content">
+                <div class="tip-card spotlight">
+                    <h3>The Habit Loop: The Foundation of Everything</h3>
+                    <p class="description">Every habit follows a neurological loop. Understanding this is the key to building habits that stick.</p>
+
+                    <div class="habit-loop">
+                        <div class="loop-step">
+                            <div class="step-number">1</div>
+                            <div class="step-title">Cue</div>
+                            <p>A trigger that signals your brain to take action</p>
+                            <div class="example">💡 Your alarm, finishing work, feeling stressed</div>
+                        </div>
+                        <div class="loop-arrow">→</div>
+                        <div class="loop-step">
+                            <div class="step-number">2</div>
+                            <div class="step-title">Routine</div>
+                            <p>The behavior itself—what you actually do</p>
+                            <div class="example">💡 Exercise, meditate, journal</div>
+                        </div>
+                        <div class="loop-arrow">→</div>
+                        <div class="loop-step">
+                            <div class="step-number">3</div>
+                            <div class="step-title">Reward</div>
+                            <p>The benefit your brain associates with the action</p>
+                            <div class="example">💡 Feel energized, calm, accomplished</div>
+                        </div>
+                    </div>
+
+                    <div class="key-insight">
+                        💡 <strong>Key Insight:</strong> Your brain doesn't care about reward quality, only that it's rewarding. A strong reward makes the habit automatic.
+                    </div>
+                </div>
+
+                <div class="tip-card">
+                    <h3>Brain Plasticity: Your Brain Can Change</h3>
+                    <p>Each time you repeat a habit, your brain literally rewires itself. Neural pathways strengthen through repetition.</p>
+                    <ul>
+                        <li><strong>Week 1:</strong> Requires conscious effort and willpower</li>
+                        <li><strong>Weeks 2-4:</strong> Becomes easier as brain builds new pathways</li>
+                        <li><strong>After 66 days:</strong> Becomes largely automatic (average formation time)</li>
+                        <li><strong>After 6 months:</strong> Deeply ingrained and resistant to change</li>
+                    </ul>
+                    <p class="note">Everyone's timeline is different. Complex habits take longer (up to 254 days) than simple ones.</p>
+                </div>
+
+                <div class="tip-card">
+                    <h3>Willpower is Limited: Design Your Environment Instead</h3>
+                    <p>Willpower is a finite resource that depletes throughout the day. The secret isn't having more willpower—it's needing less of it.</p>
+                    <div class="strategy">
+                        <strong>Strategy:</strong> Design your environment so the right choice is the easy choice:
+                        <ul>
+                            <li>Keep gym clothes visible and ready</li>
+                            <li>Place your journal on your bedside table</li>
+                            <li>Stock healthy snacks, remove junk food</li>
+                            <li>Block distracting websites on your computer</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Strategies Section -->
+        <section id="strategies" class="tips-section">
+            <div class="section-header">
+                <span class="section-icon">⚡</span>
+                <h2>Proven Strategies That Work</h2>
+                <p>Actionable techniques backed by research</p>
+            </div>
+
+            <div class="tip-content">
+                <div class="tip-card spotlight">
+                    <h3>1. Start Stupidly Small (The 2-Minute Rule)</h3>
+                    <p class="description">The best habit is one you actually do. Focus on consistency, not intensity.</p>
+                    <div class="before-after">
+                        <div class="before">
+                            <h4>Too Ambitious</h4>
+                            <ul>
+                                <li>Exercise 1 hour daily</li>
+                                <li>Read 50 pages per day</li>
+                                <li>Meditate 30 minutes</li>
+                            </ul>
+                        </div>
+                        <div class="after">
+                            <h4>Right Difficulty</h4>
+                            <ul>
+                                <li>Exercise 5 minutes</li>
+                                <li>Read 2 pages</li>
+                                <li>Meditate 1 minute</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <p class="insight">Once the habit is automatic, you can increase difficulty. Right now, focus on showing up.</p>
+                </div>
+
+                <div class="tip-card">
+                    <h3>2. Habit Stacking: Anchor New Habits to Existing Ones</h3>
+                    <p>Attach your new habit to something you already do automatically. This provides a built-in cue.</p>
+                    <div class="formula">
+                        <strong>Formula:</strong> "After I [CURRENT HABIT], I will [NEW HABIT]"
+                    </div>
+                    <div class="examples">
+                        <strong>Real Examples:</strong>
+                        <ul>
+                            <li>After I pour my morning coffee → I will write 3 gratitudes</li>
+                            <li>After I finish lunch → I will do 10 push-ups</li>
+                            <li>After I brush my teeth → I will meditate for 1 minute</li>
+                            <li>After I arrive at work → I will review my daily goals</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="tip-card">
+                    <h3>3. Tracking: The Most Powerful Motivation Tool</h3>
+                    <p>Tracking alone increases success rates by 30-40%. Seeing progress is incredibly motivating.</p>
+                    <div class="strategy">
+                        <strong>Tracking Benefits:</strong>
+                        <ul>
+                            <li><strong>Visual Progress:</strong> Watching a streak grow is motivating</li>
+                            <li><strong>Accountability:</strong> Seeing missed days makes you recommit</li>
+                            <li><strong>Pattern Recognition:</strong> You notice what helps and what doesn't</li>
+                            <li><strong>Momentum:</strong> Small wins build bigger wins</li>
+                        </ul>
+                    </div>
+                    <p class="insight">💡 "What gets measured gets managed." —Peter Drucker</p>
+                </div>
+
+                <div class="tip-card">
+                    <h3>4. Identity-Based Habits: Become the Type of Person</h3>
+                    <p>Instead of focusing on outcomes, focus on the identity behind the outcome.</p>
+                    <div class="shift">
+                        <strong>Shift Your Identity:</strong>
+                        <div class="comparison">
+                            <div class="goal-focused">
+                                <h4>Goal-Focused (Harder)</h4>
+                                <ul>
+                                    <li>"I want to exercise"</li>
+                                    <li>"I want to write a book"</li>
+                                    <li>"I want to be healthy"</li>
+                                </ul>
+                            </div>
+                            <div class="identity-focused">
+                                <h4>Identity-Focused (Easier)</h4>
+                                <ul>
+                                    <li>"I am athletic"</li>
+                                    <li>"I am a writer"</li>
+                                    <li>"I am health-conscious"</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="insight">When you adopt an identity, small habits reinforce it. You do things because "that's who I am."</p>
+                </div>
+
+                <div class="tip-card">
+                    <h3>5. The Two-Day Rule: Never Miss Twice</h3>
+                    <p>Missing once is a lapse. Missing twice is the start of a new (bad) habit.</p>
+                    <div class="rule">
+                        <strong>The Rule:</strong>
+                        <ul>
+                            <li><strong>Day 1 (missed):</strong> No problem, happens to everyone. Return tomorrow.</li>
+                            <li><strong>Day 2 (missed):</strong> DANGER. Your brain is reverting. Get back on track today.</li>
+                            <li><strong>Day 3 (missed):</strong> This is now a failure pattern. Stop the spiral.</li>
+                        </ul>
+                    </div>
+                    <p class="insight">Perfect consistency is impossible. The goal is never missing twice in a row.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Common Mistakes Section -->
+        <section id="mistakes" class="tips-section">
+            <div class="section-header">
+                <span class="section-icon">⚠️</span>
+                <h2>Common Mistakes (And How to Avoid Them)</h2>
+                <p>What derails most people</p>
+            </div>
+
+            <div class="tip-content">
+                <div class="mistake">
+                    <h3>❌ Mistake 1: Starting Too Big</h3>
+                    <p><strong>What Happens:</strong> You commit to an ambitious goal. Week 1 is great. Week 2, willpower depletes and you quit entirely.</p>
+                    <p><strong>The Fix:</strong> Start so small you can't fail. 5 minutes, not 60. Once it's automatic, increase.</p>
+                </div>
+
+                <div class="mistake">
+                    <h3>❌ Mistake 2: All-or-Nothing Thinking</h3>
+                    <p><strong>What Happens:</strong> You miss one day and think "I've failed." One miss becomes a week, then a month.</p>
+                    <p><strong>The Fix:</strong> One miss is a lapse. Two misses is a pattern. Get back on track the very next day.</p>
+                </div>
+
+                <div class="mistake">
+                    <h3>❌ Mistake 3: Ignoring the Reward</h3>
+                    <p><strong>What Happens:</strong> You focus only on the action and ignore celebrating the reward. Without a clear reward, motivation fades.</p>
+                    <p><strong>The Fix:</strong> Explicitly acknowledge the reward. "I feel amazing." "My strength is improving." Notice the benefit.</p>
+                </div>
+
+                <div class="mistake">
+                    <h3>❌ Mistake 4: Trying to Change Everything at Once</h3>
+                    <p><strong>What Happens:</strong> You decide to exercise, meditate, eat healthy, sleep more. Your brain is overwhelmed. You abandon everything.</p>
+                    <p><strong>The Fix:</strong> Pick ONE habit. Master it. After 2-3 months, add another. Build a stack.</p>
+                </div>
+
+                <div class="mistake">
+                    <h3>❌ Mistake 5: Not Tracking</h3>
+                    <p><strong>What Happens:</strong> Without visible progress, you lose motivation. Your brain can't see the benefit.</p>
+                    <p><strong>The Fix:</strong> Track visibly. Use this app, mark a calendar, check off a box. Visual progress is incredibly motivating.</p>
+                </div>
+
+                <div class="mistake">
+                    <h3>❌ Mistake 6: Trying Alone</h3>
+                    <p><strong>What Happens:</strong> You have no accountability. When motivation fades, no one notices or cares. You quietly give up.</p>
+                    <p><strong>The Fix:</strong> Tell someone. Share your goal. Join a community. Accountability increases success by 95%.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Action Plan Section -->
+        <section id="action-plan" class="tips-section">
+            <div class="section-header">
+                <span class="section-icon">🎯</span>
+                <h2>Your 5-Step Action Plan</h2>
+                <p>Start building better habits today</p>
+            </div>
+
+            <div class="action-steps">
+                <div class="step">
+                    <div class="step-number-large">1</div>
+                    <h3>Choose ONE Habit</h3>
+                    <p>Pick the ONE habit that will have the biggest impact on your life. One is all you need.</p>
+                </div>
+
+                <div class="step">
+                    <div class="step-number-large">2</div>
+                    <h3>Make It Stupidly Small</h3>
+                    <p>Reduce it to 2 minutes or less. Too small feels silly—that's the point. You can't fail.</p>
+                </div>
+
+                <div class="step">
+                    <div class="step-number-large">3</div>
+                    <h3>Find Your Cue</h3>
+                    <p>Identify when and where. "After my morning coffee" or "When I sit at my desk."</p>
+                </div>
+
+                <div class="step">
+                    <div class="step-number-large">4</div>
+                    <h3>Track It Religiously</h3>
+                    <p>Use this app to check off every day. Watching your streak grow is the motivation you need.</p>
+                </div>
+
+                <div class="step">
+                    <div class="step-number-large">5</div>
+                    <h3>Celebrate the Reward</h3>
+                    <p>After you complete it, pause and feel it. Notice the benefit. This trains your brain.</p>
+                </div>
+            </div>
+
+            <div class="start-cta">
+                <h2>Ready to Build Your First Habit?</h2>
+                <p>The best time to start was yesterday. The second best time is right now.</p>
+                <a href="/register" class="btn btn-primary">Create Your Free Account</a>
+                <a href="/" class="btn btn-secondary">Back to Home</a>
+            </div>
+        </section>
+
+        <!-- Quote Section -->
+        <section class="quote-section">
+            <blockquote>
+                "You don't rise to the level of your goals. You fall to the level of your systems."
+            </blockquote>
+            <cite>— James Clear, Atomic Habits</cite>
+            <p class="quote-explanation">
+                This is why we focus on tiny habits and tracking. A system of small, consistent actions beats willpower every time.
+            </p>
+        </section>
+    </div>
+</body>
+</html>

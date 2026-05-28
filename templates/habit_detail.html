@@ -131,7 +131,7 @@ async function loadHabitDetail() {
                     <div class="form-group">
                         <label>
                             <input type="checkbox" name="done" id="done">
-                            Completed
+                            <span id="doneLabel">Completed</span>
                         </label>
                     </div>
 
@@ -141,15 +141,26 @@ async function loadHabitDetail() {
                     </div>
 
                     <div class="form-group">
-                        <label for="mood">Mood (1-5):</label>
-                        <select id="mood" name="mood">
-                            <option value="">Select...</option>
-                            <option value="1">😞 1 - Poor</option>
-                            <option value="2">😕 2 - Fair</option>
-                            <option value="3">😐 3 - OK</option>
-                            <option value="4">🙂 4 - Good</option>
-                            <option value="5">😄 5 - Excellent</option>
-                        </select>
+                        <label>How are you feeling?</label>
+                        <div class="mood-emoji-selector">
+                            <button type="button" class="mood-emoji" data-emoji="😢" title="Sad">😢</button>
+                            <button type="button" class="mood-emoji" data-emoji="😐" title="Neutral">😐</button>
+                            <button type="button" class="mood-emoji" data-emoji="😊" title="Happy">😊</button>
+                            <button type="button" class="mood-emoji" data-emoji="😄" title="Very Happy">😄</button>
+                            <button type="button" class="mood-emoji" data-emoji="😍" title="Excited">😍</button>
+                        </div>
+                        <input type="hidden" id="mood_emoji" name="mood_emoji">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="photoFile">Add a photo (optional):</label>
+                        <input type="file" id="photoFile" name="photoFile" accept="image/*">
+                        <small>Take a photo as proof or memory of your progress</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="notes">Notes (optional):</label>
+                        <textarea id="notes" name="notes" rows="2" placeholder="How did it go? Any notes?"></textarea>
                     </div>
 
                     <button type="submit" class="btn btn-primary">Save</button>
@@ -165,6 +176,26 @@ async function loadHabitDetail() {
         document.getElementById('edit_name').value = habit.name || '';
         document.getElementById('edit_description').value = habit.description || '';
         document.getElementById('edit_goal').value = habit.goal_days_per_week || '5';
+
+        // Handle mood emoji selection
+        document.querySelectorAll('.mood-emoji').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                document.querySelectorAll('.mood-emoji').forEach(b => b.classList.remove('selected'));
+                btn.classList.add('selected');
+                document.getElementById('mood_emoji').value = btn.dataset.emoji;
+            });
+        });
+
+        // Update checkbox label based on habit type
+        const doneCheckbox = document.getElementById('done');
+        const doneLabel = document.getElementById('doneLabel');
+        if (habit.is_negative) {
+            doneLabel.textContent = 'I resisted the temptation';
+            doneCheckbox.addEventListener('change', (e) => {
+                doneLabel.textContent = e.target.checked ? 'I resisted the temptation ✓' : 'I resisted the temptation';
+            });
+        }
 
     } catch (error) {
         document.getElementById('habitDetail').innerHTML = `<p class="error">Error: ${error.message}</p>`;
@@ -184,7 +215,16 @@ async function saveTracking(e) {
 
     const done = document.getElementById('done').checked;
     const duration = parseInt(document.getElementById('duration').value) || 0;
-    const mood = document.getElementById('mood').value ? parseInt(document.getElementById('mood').value) : null;
+    const moodEmoji = document.getElementById('mood_emoji').value;
+    const notes = document.getElementById('notes').value;
+    const photoFile = document.getElementById('photoFile').files[0];
+
+    const trackPayload = {
+        done,
+        duration,
+        mood_emoji: moodEmoji || null,
+        notes: notes || null
+    };
 
     try {
         const response = await fetch(`/habits/${habitId}/track`, {
@@ -193,19 +233,36 @@ async function saveTracking(e) {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({
-                done,
-                duration,
-                mood
-            })
+            body: JSON.stringify(trackPayload)
         });
 
-        if (response.ok) {
-            document.getElementById('trackForm').style.display = 'none';
-            loadHabitDetail();
-        } else {
+        if (!response.ok) {
             alert('Failed to save tracking');
+            return;
         }
+
+        const logData = await response.json();
+
+        // Upload photo if provided
+        if (photoFile && logData.habit_id) {
+            const formData = new FormData();
+            formData.append('file', photoFile);
+
+            const photoResponse = await fetch(`/habits/${habitId}/track-photo`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                },
+                body: formData
+            });
+
+            if (!photoResponse.ok) {
+                console.error('Photo upload failed');
+            }
+        }
+
+        document.getElementById('trackForm').style.display = 'none';
+        loadHabitDetail();
     } catch (error) {
         alert('Error: ' + error.message);
     }

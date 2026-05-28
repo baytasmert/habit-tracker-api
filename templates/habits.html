@@ -12,14 +12,74 @@
         <a href="/create-habit" class="btn btn-primary">+ Create Habit</a>
     </div>
 
-    <div id="habitsList" class="habits-grid">
-        <p class="loading">Loading habits...</p>
+    <!-- Tabs -->
+    <div class="habits-tabs">
+        <button class="tab-btn active" onclick="switchTab('all-habits')">All Habits</button>
+        <button class="tab-btn" onclick="switchTab('by-category')">By Category</button>
+        <button class="tab-btn" onclick="switchTab('tips')">Tips & Guide</button>
+    </div>
+
+    <!-- All Habits Tab -->
+    <div id="all-habits" class="tab-content active">
+        <div class="filters-section">
+            <input type="text" id="tagFilter" placeholder="Filter by tag (e.g., spor, sağlık)..." class="filter-input">
+            <button onclick="applyTagFilter()" class="btn btn-outline btn-small">Filter</button>
+            <button onclick="clearFilters()" class="btn btn-outline btn-small">Clear</button>
+        </div>
+
+        <div id="habitsList" class="habits-grid">
+            <p class="loading">Loading habits...</p>
+        </div>
+    </div>
+
+    <!-- By Category Tab -->
+    <div id="by-category" class="tab-content">
+        <div id="categoryInsights" class="category-grid">
+            <p class="loading">Loading category data...</p>
+        </div>
+    </div>
+
+    <!-- Tips Tab -->
+    <div id="tips" class="tab-content">
+        <div class="tips-preview">
+            <div class="tips-card-preview">
+                <h3>🌱 Habit Formation Tips</h3>
+                <p>Learn about the psychology of habit formation, practical strategies, and common mistakes to avoid.</p>
+                <a href="/tips" class="btn btn-primary">Read Full Guide</a>
+            </div>
+        </div>
     </div>
 </div>
 {% endblock %}
 
 {% block scripts %}
 <script>
+let allHabits = [];
+let filteredTag = null;
+
+const typeColors = {
+    'daily': '#0077be',
+    'weekly': '#27ae60',
+    'count': '#f39c12',
+    'time': '#8e44ad'
+};
+
+// Tab switching
+function switchTab(tabName) {
+    document.querySelectorAll('.tab-content').forEach(tab => {
+        tab.classList.remove('active');
+    });
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    document.getElementById(tabName).classList.add('active');
+    event.target.classList.add('active');
+
+    if (tabName === 'by-category') {
+        loadCategoryInsights();
+    }
+}
+
 async function loadHabits() {
     if (!token) {
         window.location.href = '/login';
@@ -43,38 +103,148 @@ async function loadHabits() {
             throw new Error('Failed to load habits');
         }
 
-        const habits = await response.json();
-        const habitsList = document.getElementById('habitsList');
-
-        if (habits.length === 0) {
-            habitsList.innerHTML = '<p class="empty-state">No habits yet. <a href="/create-habit">Create one now!</a></p>';
-            return;
-        }
-
-        habitsList.innerHTML = habits.map(habit => `
-            <div class="habit-card">
-                <div class="habit-card-header">
-                    <h3>${habit.name || 'Untitled'}</h3>
-                    <button class="btn-icon" onclick="deleteHabit(${habit.id})">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <polyline points="3 6 5 6 21 6"></polyline>
-                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                        </svg>
-                    </button>
-                </div>
-                <p class="habit-description">${habit.description || 'No description'}</p>
-                <div class="habit-meta">
-                    <span class="badge">Goal: ${habit.goal_days_per_week} days/week</span>
-                </div>
-                <div class="habit-actions">
-                    <a href="/edit-habit?id=${habit.id}" class="btn btn-secondary">View Details</a>
-                    <button class="btn btn-outline" onclick="trackHabit(${habit.id})">Track Today</button>
-                </div>
-            </div>
-        `).join('');
+        allHabits = await response.json();
+        renderHabits(allHabits);
     } catch (error) {
         document.getElementById('habitsList').innerHTML = `<p class="error">Error: ${error.message}</p>`;
     }
+}
+
+function renderHabits(habits) {
+    const habitsList = document.getElementById('habitsList');
+
+    if (habits.length === 0) {
+        habitsList.innerHTML = '<p class="empty-state">No habits yet. <a href="/create-habit">Create one now!</a></p>';
+        return;
+    }
+
+    habitsList.innerHTML = habits.map(habit => {
+        const typeColor = typeColors[habit.habit_type] || '#3B82F6';
+        const isNegative = habit.is_negative ? '<span class="habit-negative-badge">⚠️ Avoid</span>' : '';
+        const habitImage = habit.image_url ? `<img src="${habit.image_url}" alt="${habit.name}" class="habit-card-image">` : '';
+        const lastTracked = habit.logs && habit.logs.length > 0 ? new Date(habit.logs[habit.logs.length - 1].log_date).toLocaleDateString() : 'Not tracked';
+
+        const tagsHtml = habit.tags ? habit.tags.split(',').map(tag =>
+            `<span class="tag-pill" onclick="filterByTag('${tag.trim()}')">${tag.trim()}</span>`
+        ).join('') : '';
+
+        return `
+            <div class="habit-card-with-image">
+                ${habitImage ? `<div class="habit-image-wrapper">${habitImage}</div>` : '<div class="habit-image-placeholder"></div>'}
+                <div class="habit-card-content">
+                    <div class="habit-card-header">
+                        <div>
+                            <h4>${habit.name || 'Untitled'}</h4>
+                            <p class="habit-description">${habit.description || ''}</p>
+                        </div>
+                        ${isNegative}
+                    </div>
+
+                    <div class="habit-card-badges">
+                        <span class="habit-type-badge" style="background-color: ${typeColor}; color: white;">${habit.habit_type}</span>
+                    </div>
+
+                    ${tagsHtml ? `<div class="habit-tags">${tagsHtml}</div>` : ''}
+
+                    <p class="habit-card-last-tracked">Last tracked: ${lastTracked}</p>
+
+                    <div class="habit-card-actions">
+                        <a href="/edit-habit?id=${habit.id}" class="btn btn-small btn-primary">Track</a>
+                        <a href="/edit-habit?id=${habit.id}" class="btn btn-small btn-secondary">Edit</a>
+                        <button class="btn btn-small btn-danger" onclick="deleteHabit(${habit.id})">Delete</button>
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+async function loadCategoryInsights() {
+    if (!token) {
+        window.location.href = '/login';
+        return;
+    }
+
+    try {
+        const response = await fetch('/analytics/by-tags', {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to load category data');
+        }
+
+        const insights = await response.json();
+        const categoryInsights = document.getElementById('categoryInsights');
+
+        if (insights.length === 0) {
+            categoryInsights.innerHTML = '<p class="empty-state">No categories yet. Add tags to your habits to see insights!</p>';
+            return;
+        }
+
+        // Sort by success rate
+        insights.sort((a, b) => (b.success_rate || 0) - (a.success_rate || 0));
+
+        categoryInsights.innerHTML = insights.map(tag => {
+            const successRate = Math.round((tag.success_rate || 0) * 100);
+            const successColor = successRate >= 80 ? '#27ae60' : successRate >= 50 ? '#f39c12' : '#e74c3c';
+
+            return `
+                <div class="category-insights-card">
+                    <div class="category-header">
+                        <h3>${tag.tag}</h3>
+                        <span class="category-badge" style="background-color: ${successColor}; color: white;">${successRate}%</span>
+                    </div>
+                    <div class="category-stats">
+                        <div class="stat-item">
+                            <span class="stat-label">Habits:</span>
+                            <span class="stat-value">${tag.habits_count}</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Total Duration:</span>
+                            <span class="stat-value">${tag.total_duration} mins</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Successful Days:</span>
+                            <span class="stat-value">${tag.successful_days}/${tag.total_days}</span>
+                        </div>
+                    </div>
+                    <button class="btn btn-outline btn-small" onclick="filterByTag('${tag.tag}')">View Habits</button>
+                </div>
+            `;
+        }).join('');
+    } catch (error) {
+        document.getElementById('categoryInsights').innerHTML = `<p class="error">Error: ${error.message}</p>`;
+    }
+}
+
+function filterByTag(tag) {
+    filteredTag = tag;
+    document.getElementById('tagFilter').value = tag;
+    applyTagFilter();
+    switchTab('all-habits');
+}
+
+function applyTagFilter() {
+    const filterValue = document.getElementById('tagFilter').value.trim().toLowerCase();
+    if (!filterValue) {
+        renderHabits(allHabits);
+        return;
+    }
+
+    const filtered = allHabits.filter(habit =>
+        habit.tags && habit.tags.toLowerCase().includes(filterValue)
+    );
+    renderHabits(filtered);
+}
+
+function clearFilters() {
+    document.getElementById('tagFilter').value = '';
+    renderHabits(allHabits);
+    filteredTag = null;
 }
 
 async function deleteHabit(habitId) {
@@ -100,29 +270,173 @@ async function deleteHabit(habitId) {
     }
 }
 
-async function trackHabit(habitId) {
-    try {
-        const response = await fetch(`/habits/${habitId}/track`, {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ done: true })
-        });
-
-        if (response.ok) {
-            alert('Habit tracked! Great job! 🎉');
-            loadHabits();
-        } else {
-            const error = await response.json();
-            alert('Failed to track habit: ' + (error.detail || 'Unknown error'));
-        }
-    } catch (error) {
-        alert('Error: ' + error.message);
-    }
-}
-
+// Load on page load
 loadHabits();
 </script>
+
+<style>
+.habits-tabs {
+    display: flex;
+    gap: 1rem;
+    margin: 2rem 0;
+    border-bottom: 2px solid var(--border);
+}
+
+.tab-btn {
+    background: none;
+    border: none;
+    padding: 1rem 1.5rem;
+    font-size: 1rem;
+    color: var(--text-light);
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    transition: all 0.2s;
+    font-weight: 500;
+}
+
+.tab-btn:hover {
+    color: var(--primary);
+}
+
+.tab-btn.active {
+    color: var(--primary);
+    border-bottom-color: var(--primary);
+}
+
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+.filters-section {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.filter-input {
+    flex: 1;
+    padding: 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 0.95rem;
+}
+
+.category-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+}
+
+.category-insights-card {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow);
+    transition: all 0.2s;
+}
+
+.category-insights-card:hover {
+    border-color: var(--primary);
+    box-shadow: var(--shadow-lg);
+}
+
+.category-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.category-header h3 {
+    margin: 0;
+}
+
+.category-badge {
+    padding: 0.4rem 0.8rem;
+    border-radius: 4px;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.category-stats {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.stat-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--border);
+}
+
+.stat-label {
+    color: var(--text-light);
+    font-size: 0.9rem;
+}
+
+.stat-value {
+    font-weight: 600;
+    color: var(--primary);
+}
+
+.tips-preview {
+    display: flex;
+    justify-content: center;
+    padding: 2rem;
+}
+
+.tips-card-preview {
+    background: white;
+    padding: 2rem;
+    border-radius: 8px;
+    border-left: 4px solid var(--primary);
+    box-shadow: var(--shadow);
+    max-width: 500px;
+    text-align: center;
+}
+
+.tips-card-preview h3 {
+    margin-top: 0;
+    color: var(--primary);
+}
+
+.tips-card-preview p {
+    color: var(--text-light);
+    margin-bottom: 1.5rem;
+}
+
+@media (max-width: 768px) {
+    .habits-tabs {
+        flex-direction: column;
+        border-bottom: none;
+    }
+
+    .tab-btn {
+        border-bottom: none;
+        border-left: 3px solid transparent;
+        padding: 0.75rem 1rem;
+    }
+
+    .tab-btn.active {
+        border-left-color: var(--primary);
+    }
+
+    .filters-section {
+        flex-direction: column;
+    }
+
+    .category-grid {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
 {% endblock %}

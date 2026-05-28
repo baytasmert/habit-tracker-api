@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Habit Tracker</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <style>
+        .api-redirect {
+            text-align: center;
+            padding: 2rem;
+            margin-top: 4rem;
+        }
+        .api-redirect h2 {
+            margin-bottom: 1rem;
+        }
+        .api-redirect a {
+            display: inline-block;
+            padding: 0.75rem 1.5rem;
+            background: #0077be;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            margin: 0.5rem;
+        }
+        .api-redirect a:hover {
+            background: #005fa3;
+        }
+        .port-info {
+            background: #f5f5f5;
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="/" class="logo">Habit Tracker</a>
+            <div class="nav-links">
+                <a href="http://localhost:8000/">API</a>
+                <a href="http://localhost:3000/">Grafana</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <div class="api-redirect">
+            <h2>🏠 Habit Tracker Frontend</h2>
+            <p>Frontend ve Backend ayrı portlarda çalışıyor:</p>
+
+            <div class="port-info">
+                📍 Frontend (Static): <strong>localhost:8001</strong><br>
+                📍 API Server: <strong>localhost:8000</strong><br>
+                📍 Grafana: <strong>localhost:3000</strong>
+            </div>
+
+            <p>API'ye erişmek için:</p>
+            <a href="http://localhost:8000/">Go to API</a>
+
+            <p style="margin-top: 2rem; color: #666; font-size: 0.9rem;">
+                Frontend localhost:8001 üzerinde çalışıyor.<br>
+                Tarayıcı CORS üzerinden localhost:8000'daki API'ya erişebiliyor.
+            </p>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <p>&copy; 2026 Habit Tracker. Frontend ve Backend Isolated.</p>
+    </footer>
+
+    <script>
+        // API health check ve CORS test
+        async function testAPI() {
+            try {
+                const response = await fetch('http://localhost:8000/health', {
+                    method: 'GET',
+                    credentials: 'include'
+                });
+                const data = await response.json();
+                console.log('✅ API accessible from frontend:', data);
+            } catch (error) {
+                console.error('❌ CORS or API error:', error);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', testAPI);
+    </script>
+</body>
+</html>

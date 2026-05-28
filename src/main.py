@@ -285,8 +285,10 @@ async def logout_page(request: Request):
 
 
 @app.get("/admin", response_class=templates.TemplateResponse.__class__)
-async def admin_panel(request: Request):
-    """Admin panel with system health status"""
+async def admin_panel(request: Request, current_user: User = Depends(get_current_user)):
+    """Admin panel with system health status - admin only"""
+    if not current_user.is_admin:
+        raise HTTPException(status_code=403, detail="Admin access required")
     return templates.TemplateResponse("admin.html", {"request": request})
 
 

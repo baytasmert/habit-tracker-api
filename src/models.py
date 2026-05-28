@@ -12,6 +12,7 @@ class User(Base):
     email = Column(String, nullable=False, unique=True)
     hashed_password = Column(String, nullable=False)
     avatar_url = Column(String, nullable=True)
+    is_admin = Column(Boolean, default=False)
     created_at = Column(Date, default=date.today)
 
     habits = relationship("Habit", back_populates="user", cascade="all, delete-orphan")

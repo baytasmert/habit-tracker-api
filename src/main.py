@@ -29,6 +29,7 @@ from .metrics import http_requests_total, http_request_duration_seconds
 from opentelemetry import trace as otel_trace
 from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import SimpleSpanProcessor
+from opentelemetry.sdk.resources import Resource
 from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
 from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
 from opentelemetry.instrumentation.sqlalchemy import SQLAlchemyInstrumentor
@@ -42,11 +43,17 @@ if traces_exporter.lower() != "none":
     print(f"[OTEL] Initializing OTLP gRPC exporter: {jaeger_host}:{jaeger_port}", flush=True)
 
     try:
+        # Create resource with service name
+        resource = Resource.create({
+            "service.name": "habit-tracker-api",
+            "service.version": "0.1.0",
+        })
+
         otlp_exporter = OTLPSpanExporter(
             endpoint=f"grpc://{jaeger_host}:4317",
             insecure=True,
         )
-        trace_provider = TracerProvider()
+        trace_provider = TracerProvider(resource=resource)
         trace_provider.add_span_processor(SimpleSpanProcessor(otlp_exporter))
         otel_trace.set_tracer_provider(trace_provider)
         print(f"[OTEL] OTLP gRPC exporter configured successfully: grpc://{jaeger_host}:4317", flush=True)

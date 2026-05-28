@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="tr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Learn science-backed strategies to build lasting habits. Expert tips on habit formation, common mistakes, and proven methods.">
-    <title>Habit Formation Guide - Science-Backed Strategies</title>
+    <meta name="description" content="Alışkanlık oluşturma rehberi. Bilimsel yöntemlerle kalıcı alışkanlıklar nasıl oluşturur, ipuçları ve stratejiler.">
+    <title>Alışkanlık Oluşturma Rehberi - Kanıtlanmış Stratejiler</title>
     <link rel="stylesheet" href="/static/style.css">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -206,98 +206,6 @@
             margin-bottom: 1.5rem;
         }
 
-        .habit-loop {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 1rem;
-            margin: 2rem 0;
-        }
-
-        .loop-step {
-            background: #f0f8ff;
-            padding: 1.5rem;
-            border-radius: 8px;
-            border: 1px solid #0077be;
-            text-align: center;
-        }
-
-        .step-number {
-            background: #0077be;
-            color: white;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 0.5rem;
-            font-weight: bold;
-            font-size: 1.2rem;
-        }
-
-        .step-title {
-            font-weight: 700;
-            color: #0077be;
-            margin-bottom: 0.5rem;
-        }
-
-        .loop-step p {
-            font-size: 0.95rem;
-            margin-bottom: 0.5rem;
-        }
-
-        .example {
-            background: white;
-            padding: 0.75rem;
-            border-radius: 4px;
-            font-size: 0.9rem;
-            margin-top: 0.5rem;
-            color: #333;
-        }
-
-        .loop-arrow {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.5rem;
-            color: #0077be;
-        }
-
-        .key-insight {
-            background: #fff3cd;
-            border-left: 4px solid #ffc107;
-            padding: 1.5rem;
-            border-radius: 4px;
-            margin: 1.5rem 0;
-        }
-
-        ul, ol {
-            margin-left: 1.5rem;
-            margin-bottom: 1rem;
-        }
-
-        li {
-            margin-bottom: 0.5rem;
-        }
-
-        strong {
-            color: #0077be;
-        }
-
-        .note {
-            font-size: 0.95rem;
-            color: #666;
-            font-style: italic;
-            margin-top: 0.5rem;
-        }
-
-        .strategy {
-            background: #e8f4f8;
-            padding: 1.5rem;
-            border-radius: 8px;
-            margin: 1rem 0;
-        }
-
         .before-after {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -368,13 +276,11 @@
             margin: 1rem 0;
         }
 
-        .examples strong {
-            display: block;
-            margin-bottom: 0.5rem;
-        }
-
-        .shift {
-            margin: 1.5rem 0;
+        .strategy {
+            background: #e8f4f8;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin: 1rem 0;
         }
 
         .comparison {
@@ -393,10 +299,6 @@
         .goal-focused h4, .identity-focused h4 {
             margin-bottom: 0.75rem;
             font-size: 1rem;
-        }
-
-        .goal-focused ul, .identity-focused ul {
-            font-size: 0.95rem;
         }
 
         .rule {
@@ -538,6 +440,19 @@
             background: #f0f8ff;
         }
 
+        ul, ol {
+            margin-left: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        li {
+            margin-bottom: 0.5rem;
+        }
+
+        strong {
+            color: #0077be;
+        }
+
         @media (max-width: 768px) {
             .nav-bar {
                 padding: 0.75rem 1rem;
@@ -594,15 +509,6 @@
             .comparison {
                 grid-template-columns: 1fr;
             }
-
-            .habit-loop {
-                grid-template-columns: 1fr;
-            }
-
-            .loop-arrow {
-                transform: rotate(90deg);
-                margin: -1rem 0;
-            }
         }
     </style>
 </head>
@@ -648,33 +554,7 @@
                 <div class="tip-card spotlight">
                     <h3>Alışkanlık Döngüsü: Her Şeyin Temeli</h3>
                     <p class="description">Her alışkanlık 3 adımdan oluşur: tetikleyici → eylem → ödül. Bu döngüyü anlamak, kalıcı alışkanlıklar oluşturmanın anahtarı.</p>
-
-                    <div class="habit-loop">
-                        <div class="loop-step">
-                            <div class="step-number">1</div>
-                            <div class="step-title">Tetikleyici</div>
-                            <p>Beynine eylem almaya işaret veren şey</p>
-                            <div class="example">💡 Alarm, işi bitirmek, stres</div>
-                        </div>
-                        <div class="loop-arrow">→</div>
-                        <div class="loop-step">
-                            <div class="step-number">2</div>
-                            <div class="step-title">Eylem</div>
-                            <p>Yaptığın davranış</p>
-                            <div class="example">💡 Egzersiz, meditasyon, yazı</div>
-                        </div>
-                        <div class="loop-arrow">→</div>
-                        <div class="loop-step">
-                            <div class="step-number">3</div>
-                            <div class="step-title">Ödül</div>
-                            <p>Eylemle ilişkilendirdiğin pozitif sonuç</p>
-                            <div class="example">💡 Enerjik hisset, sakin ol, başarılı ol</div>
-                        </div>
-                    </div>
-
-                    <div class="key-insight">
-                        💡 <strong>Önemli:</strong> Beyniniz ödülün kalitesine değil, sadece ödülün var olmasına bakar. Güçlü ödül = otomatik alışkanlık.
-                    </div>
+                    <p class="insight">💡 <strong>Önemli:</strong> Beyniniz ödülün kalitesine değil, sadece ödülün var olmasına bakar. Güçlü ödül = otomatik alışkanlık.</p>
                 </div>
 
                 <div class="tip-card">
@@ -686,7 +566,7 @@
                         <li><strong>66 Gün sonra:</strong> Neredeyse otomatik (ortalama zaman)</li>
                         <li><strong>6 Ay sonra:</strong> Derin köklü ve değişmez</li>
                     </ul>
-                    <p class="note">Herkesin süresi farklıdır. Karmaşık alışkanlıklar daha uzun sürer.</p>
+                    <p class="insight">Herkesin süresi farklıdır. Karmaşık alışkanlıklar daha uzun sürer.</p>
                 </div>
 
                 <div class="tip-card">
@@ -715,100 +595,97 @@
 
             <div class="tip-content">
                 <div class="tip-card spotlight">
-                    <h3>1. Start Stupidly Small (The 2-Minute Rule)</h3>
-                    <p class="description">The best habit is one you actually do. Focus on consistency, not intensity.</p>
+                    <h3>1. Çok Küçük Başla (2 Dakika Kuralı)</h3>
+                    <p class="description">En iyi alışkanlık, gerçekten yapabileceğin alışkanlıktır. Yoğunluğundan değil, tutarlılıktan önemli.</p>
                     <div class="before-after">
                         <div class="before">
-                            <h4>Too Ambitious</h4>
+                            <h4>Çok Hırslı</h4>
                             <ul>
-                                <li>Exercise 1 hour daily</li>
-                                <li>Read 50 pages per day</li>
-                                <li>Meditate 30 minutes</li>
+                                <li>Günlük 1 saat egzersiz</li>
+                                <li>Günde 50 sayfa okuma</li>
+                                <li>30 dakika meditasyon</li>
                             </ul>
                         </div>
                         <div class="after">
-                            <h4>Right Difficulty</h4>
+                            <h4>Doğru Seviye</h4>
                             <ul>
-                                <li>Exercise 5 minutes</li>
-                                <li>Read 2 pages</li>
-                                <li>Meditate 1 minute</li>
+                                <li>5 dakika egzersiz</li>
+                                <li>2 sayfa okuma</li>
+                                <li>1 dakika meditasyon</li>
                             </ul>
                         </div>
                     </div>
-                    <p class="insight">Once the habit is automatic, you can increase difficulty. Right now, focus on showing up.</p>
+                    <p class="insight">Alışkanlık otomatik olunca, zorluk artırabilirsin. Şu an sadece başla.</p>
                 </div>
 
                 <div class="tip-card">
-                    <h3>2. Habit Stacking: Anchor New Habits to Existing Ones</h3>
-                    <p>Attach your new habit to something you already do automatically. This provides a built-in cue.</p>
+                    <h3>2. Alışkanlık Yığını: Eski Alışkanlıklara Çerçeve</h3>
+                    <p>Yeni alışkanlığını zaten otomatik yaptığın bir şeye yapıştır. Bu, yerleşik bir tetikleyici sağlar.</p>
                     <div class="formula">
-                        <strong>Formula:</strong> "After I [CURRENT HABIT], I will [NEW HABIT]"
+                        <strong>Formül:</strong> "Sonra [MEVCUT ALIŞKANLıK], [YENİ ALIŞKANLıK] yapacağım"
                     </div>
                     <div class="examples">
-                        <strong>Real Examples:</strong>
+                        <strong>Gerçek Örnekler:</strong>
                         <ul>
-                            <li>After I pour my morning coffee → I will write 3 gratitudes</li>
-                            <li>After I finish lunch → I will do 10 push-ups</li>
-                            <li>After I brush my teeth → I will meditate for 1 minute</li>
-                            <li>After I arrive at work → I will review my daily goals</li>
+                            <li>Kahvemi döktükten sonra → 3 şey yazacağım</li>
+                            <li>Öğle yemeğinden sonra → 10 şınav çekecek</li>
+                            <li>Dişlerimi fırçaladıktan sonra → 1 dakika meditasyon</li>
+                            <li>İşe varıp masaya oturduğumda → Günün planını yapacağım</li>
                         </ul>
                     </div>
                 </div>
 
                 <div class="tip-card">
-                    <h3>3. Tracking: The Most Powerful Motivation Tool</h3>
-                    <p>Tracking alone increases success rates by 30-40%. Seeing progress is incredibly motivating.</p>
+                    <h3>3. Takip: En Güçlü Motivasyon Aracı</h3>
+                    <p>Sadece takip etmek başarıyı %30-40 arttırır. İlerleme görmek çok motive ediyor.</p>
                     <div class="strategy">
-                        <strong>Tracking Benefits:</strong>
+                        <strong>Takip Faydaları:</strong>
                         <ul>
-                            <li><strong>Visual Progress:</strong> Watching a streak grow is motivating</li>
-                            <li><strong>Accountability:</strong> Seeing missed days makes you recommit</li>
-                            <li><strong>Pattern Recognition:</strong> You notice what helps and what doesn't</li>
-                            <li><strong>Momentum:</strong> Small wins build bigger wins</li>
+                            <li><strong>Görsel İlerleme:</strong> Strekin büyüdüğünü görmek motive eder</li>
+                            <li><strong>Hesap Verebilirlik:</strong> Kaçırdığın günleri görmek seni yeniden başlamaya iter</li>
+                            <li><strong>Desen Tanıma:</strong> Neyin işe yaradığını fark edersin</li>
+                            <li><strong>Momentum:</strong> Küçük kazanımlar büyük kazanımlara dönüşür</li>
                         </ul>
                     </div>
-                    <p class="insight">💡 "What gets measured gets managed." —Peter Drucker</p>
+                    <p class="insight">💡 "Ölçülen şey yönetilir." —Peter Drucker</p>
                 </div>
 
                 <div class="tip-card">
-                    <h3>4. Identity-Based Habits: Become the Type of Person</h3>
-                    <p>Instead of focusing on outcomes, focus on the identity behind the outcome.</p>
-                    <div class="shift">
-                        <strong>Shift Your Identity:</strong>
-                        <div class="comparison">
-                            <div class="goal-focused">
-                                <h4>Goal-Focused (Harder)</h4>
-                                <ul>
-                                    <li>"I want to exercise"</li>
-                                    <li>"I want to write a book"</li>
-                                    <li>"I want to be healthy"</li>
-                                </ul>
-                            </div>
-                            <div class="identity-focused">
-                                <h4>Identity-Focused (Easier)</h4>
-                                <ul>
-                                    <li>"I am athletic"</li>
-                                    <li>"I am a writer"</li>
-                                    <li>"I am health-conscious"</li>
-                                </ul>
-                            </div>
+                    <h3>4. Kimlik Bazlı Alışkanlıklar: Kişi Ol</h3>
+                    <p>Sonuca odaklanmak yerine, o sonuçun arkasındaki kimliğe odaklan.</p>
+                    <div class="comparison">
+                        <div class="goal-focused">
+                            <h4>Hedef-Bazlı (Zor)</h4>
+                            <ul>
+                                <li>"Egzersiz yapmak istiyorum"</li>
+                                <li>"Kitap yazmak istiyorum"</li>
+                                <li>"Sağlıklı olmak istiyorum"</li>
+                            </ul>
+                        </div>
+                        <div class="identity-focused">
+                            <h4>Kimlik-Bazlı (Kolay)</h4>
+                            <ul>
+                                <li>"Ben sporcu biriyim"</li>
+                                <li>"Ben yazar biriyim"</li>
+                                <li>"Ben sağlık bilinci olan biriyim"</li>
+                            </ul>
                         </div>
                     </div>
-                    <p class="insight">When you adopt an identity, small habits reinforce it. You do things because "that's who I am."</p>
+                    <p class="insight">Kimlik benimsenince, küçük alışkanlıklar bunu güçlendirir. Çünkü "ben bu kimlik"</p>
                 </div>
 
                 <div class="tip-card">
-                    <h3>5. The Two-Day Rule: Never Miss Twice</h3>
-                    <p>Missing once is a lapse. Missing twice is the start of a new (bad) habit.</p>
+                    <h3>5. İki Günü Atlatma Kuralı: Hiç İkisini Arka Arkaya Atlama</h3>
+                    <p>Bir gün atlamak ıssız. İki gün atlamak yeni kötü bir alışkanlığın başı.</p>
                     <div class="rule">
-                        <strong>The Rule:</strong>
+                        <strong>Kural:</strong>
                         <ul>
-                            <li><strong>Day 1 (missed):</strong> No problem, happens to everyone. Return tomorrow.</li>
-                            <li><strong>Day 2 (missed):</strong> DANGER. Your brain is reverting. Get back on track today.</li>
-                            <li><strong>Day 3 (missed):</strong> This is now a failure pattern. Stop the spiral.</li>
+                            <li><strong>1. Gün (Atlandı):</strong> Sorun değil, herkese olur. Yarın başla.</li>
+                            <li><strong>2. Gün (Atlandı):</strong> TEHLİKE. Beynin geri dönüyor. Bugün başla.</li>
+                            <li><strong>3. Gün (Atlandı):</strong> Artık başarısızlık deseni. Spirali durdur.</li>
                         </ul>
                     </div>
-                    <p class="insight">Perfect consistency is impossible. The goal is never missing twice in a row.</p>
+                    <p class="insight">Mükemmel tutarlılık imkansız. Hedef: hiçbir zaman iki gün arka arkaya atlama.</p>
                 </div>
             </div>
         </section>
@@ -823,39 +700,39 @@
 
             <div class="tip-content">
                 <div class="mistake">
-                    <h3>❌ Mistake 1: Starting Too Big</h3>
-                    <p><strong>What Happens:</strong> You commit to an ambitious goal. Week 1 is great. Week 2, willpower depletes and you quit entirely.</p>
-                    <p><strong>The Fix:</strong> Start so small you can't fail. 5 minutes, not 60. Once it's automatic, increase.</p>
+                    <h3>❌ Hata 1: Çok Büyük Başla</h3>
+                    <p><strong>Ne Olur:</strong> Hırslı bir hedefle başlarsın. 1. hafta harika. 2. hafta irade biter, tamamen bırakırsın.</p>
+                    <p><strong>Çözüm:</strong> Çok küçük başla ki başarısız olamazsın. 5 dakika, 60 değil. Otomatik olunca artır.</p>
                 </div>
 
                 <div class="mistake">
-                    <h3>❌ Mistake 2: All-or-Nothing Thinking</h3>
-                    <p><strong>What Happens:</strong> You miss one day and think "I've failed." One miss becomes a week, then a month.</p>
-                    <p><strong>The Fix:</strong> One miss is a lapse. Two misses is a pattern. Get back on track the very next day.</p>
+                    <h3>❌ Hata 2: Hep Ya Da Hiç Düşüncesi</h3>
+                    <p><strong>Ne Olur:</strong> Bir gün kaçırırsan "Başarısız oldum" dersin. Bir gün bir hafta, bir hafta bir ay olur.</p>
+                    <p><strong>Çözüm:</strong> Bir gün kural değil. İki gün kuralı: ikinci günü de kaçırıp desen oluşturma.</p>
                 </div>
 
                 <div class="mistake">
-                    <h3>❌ Mistake 3: Ignoring the Reward</h3>
-                    <p><strong>What Happens:</strong> You focus only on the action and ignore celebrating the reward. Without a clear reward, motivation fades.</p>
-                    <p><strong>The Fix:</strong> Explicitly acknowledge the reward. "I feel amazing." "My strength is improving." Notice the benefit.</p>
+                    <h3>❌ Hata 3: Ödülü Görmezden Gel</h3>
+                    <p><strong>Ne Olur:</strong> Eyleme odaklanıp ödülü gözardı edersin. Açık ödül olmayınca motivasyon gider.</p>
+                    <p><strong>Çözüm:</strong> Ödülü açıkça söyle. "Şu an çok iyi hissediyorum." "Gücüm artıyor." Farkında ol.</p>
                 </div>
 
                 <div class="mistake">
-                    <h3>❌ Mistake 4: Trying to Change Everything at Once</h3>
-                    <p><strong>What Happens:</strong> You decide to exercise, meditate, eat healthy, sleep more. Your brain is overwhelmed. You abandon everything.</p>
-                    <p><strong>The Fix:</strong> Pick ONE habit. Master it. After 2-3 months, add another. Build a stack.</p>
+                    <h3>❌ Hata 4: Her Şeyi Aynı Anda Değiştir</h3>
+                    <p><strong>Ne Olur:</strong> Egzersiz, meditasyon, sağlıklı beslen, daha çok uyu... Beyin ezilir. Hepsi bırakırsın.</p>
+                    <p><strong>Çözüm:</strong> BİR alışkanlık seç. Ustalaş. 2-3 ay sonra diğerini ekle. Yığın oluştur.</p>
                 </div>
 
                 <div class="mistake">
-                    <h3>❌ Mistake 5: Not Tracking</h3>
-                    <p><strong>What Happens:</strong> Without visible progress, you lose motivation. Your brain can't see the benefit.</p>
-                    <p><strong>The Fix:</strong> Track visibly. Use this app, mark a calendar, check off a box. Visual progress is incredibly motivating.</p>
+                    <h3>❌ Hata 5: Takip Etme</h3>
+                    <p><strong>Ne Olur:</strong> İlerleme görülmezse motivasyon gider. Beyin yararı göremez.</p>
+                    <p><strong>Çözüm:</strong> Görünür takip yap. Bu app, takvim işareti, kutu. İlerleme çok motive eder.</p>
                 </div>
 
                 <div class="mistake">
-                    <h3>❌ Mistake 6: Trying Alone</h3>
-                    <p><strong>What Happens:</strong> You have no accountability. When motivation fades, no one notices or cares. You quietly give up.</p>
-                    <p><strong>The Fix:</strong> Tell someone. Share your goal. Join a community. Accountability increases success by 95%.</p>
+                    <h3>❌ Hata 6: Yalnız Dene</h3>
+                    <p><strong>Ne Olur:</strong> Hesap verebilecek kimse yok. Motivasyon gidince sessizce bırakırsın.</p>
+                    <p><strong>Çözüm:</strong> Birine söyle. Hedefini paylaş. Topluluk bul. Hesap verebilirlik başarıyı %95 arttırır.</p>
                 </div>
             </div>
         </section>
@@ -871,32 +748,32 @@
             <div class="action-steps">
                 <div class="step">
                     <div class="step-number-large">1</div>
-                    <h3>Choose ONE Habit</h3>
-                    <p>Pick the ONE habit that will have the biggest impact on your life. One is all you need.</p>
+                    <h3>BİR Alışkanlık Seç</h3>
+                    <p>Hayatında en büyük etkisi olacak BİR alışkanlık seç. Bir tane yeterli.</p>
                 </div>
 
                 <div class="step">
                     <div class="step-number-large">2</div>
-                    <h3>Make It Stupidly Small</h3>
-                    <p>Reduce it to 2 minutes or less. Too small feels silly—that's the point. You can't fail.</p>
+                    <h3>Çok Küçük Yap</h3>
+                    <p>2 dakika veya daha az. Çok küçük saçma gözüksün— bu tam doğru. Başarısız olamazsın.</p>
                 </div>
 
                 <div class="step">
                     <div class="step-number-large">3</div>
-                    <h3>Find Your Cue</h3>
-                    <p>Identify when and where. "After my morning coffee" or "When I sit at my desk."</p>
+                    <h3>Tetikleyiciyi Bul</h3>
+                    <p>Ne zaman, nerede yapacağını belirle. "Kahvemden sonra" veya "Masaya oturduğumda."</p>
                 </div>
 
                 <div class="step">
                     <div class="step-number-large">4</div>
-                    <h3>Track It Religiously</h3>
-                    <p>Use this app to check off every day. Watching your streak grow is the motivation you need.</p>
+                    <h3>Her Gün Takip Et</h3>
+                    <p>Bu appde her gün işaretle. Strekin büyüdüğünü görmek seni harekete geçirecek motivasyondur.</p>
                 </div>
 
                 <div class="step">
                     <div class="step-number-large">5</div>
-                    <h3>Celebrate the Reward</h3>
-                    <p>After you complete it, pause and feel it. Notice the benefit. This trains your brain.</p>
+                    <h3>Ödülü Hisset</h3>
+                    <p>Bitirdikten sonra dur ve hisset. "Şu an harika hissediyorum." Beynine bunu öğret.</p>
                 </div>
             </div>
 
@@ -911,11 +788,11 @@
         <!-- Quote Section -->
         <section class="quote-section">
             <blockquote>
-                "You don't rise to the level of your goals. You fall to the level of your systems."
+                "Hedefin seviyesine yükselemezsin. Sisteminin seviyesine düşersin."
             </blockquote>
             <cite>— James Clear, Atomic Habits</cite>
             <p class="quote-explanation">
-                This is why we focus on tiny habits and tracking. A system of small, consistent actions beats willpower every time.
+                Bu yüzden küçük alışkanlıklara ve takip etmeye odaklanırız. Küçük, tutarlı eylemlerin sistemi iradeyi yener.
             </p>
         </section>
     </div>

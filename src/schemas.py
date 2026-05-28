@@ -1,4 +1,4 @@
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, field_validator
 from datetime import date
 from typing import Optional, List
 
@@ -45,12 +45,19 @@ class HabitResponse(BaseModel):
 
 
 class TrackRequest(BaseModel):
-    date: Optional[date] = None
+    date: Optional[str | date] = None
     done: bool = True
     duration: Optional[int] = None
     notes: Optional[str] = None
     mood: Optional[int] = None
     mood_emoji: Optional[str] = None
+
+    @field_validator("date", mode="before")
+    @classmethod
+    def parse_date(cls, v):
+        if isinstance(v, str):
+            return date.fromisoformat(v)
+        return v
 
 
 class TrackResponse(BaseModel):

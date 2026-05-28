@@ -267,11 +267,10 @@ def get_metrics():
 
 @app.on_event("startup")
 def startup():
-    # Fresh start: drop all tables and recreate (safe for dev/test)
-    Base.metadata.drop_all(bind=engine)
+    # Create tables if they don't exist (preserve existing data)
     Base.metadata.create_all(bind=engine)
 
-    # Create default admin user
+    # Create default admin user if it doesn't exist
     from .auth import hash_password
     db = SessionLocal()
     try:

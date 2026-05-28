@@ -1,7 +1,6 @@
 import factory
 from factory import fuzzy
 from faker import Faker
-from datetime import date, timedelta
 from src.models import User, Habit, HabitLog
 from src.auth import hash_password
 

@@ -2,7 +2,6 @@
 S3 Integration Tests
 Test avatar upload/download functionality via LocalStack S3
 """
-import pytest
 from src.aws.s3_service import S3Service
 
 

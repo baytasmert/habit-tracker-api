@@ -1,16 +1,19 @@
 import os
+import platform
+import time
+import requests
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 import factory
+from playwright.sync_api import sync_playwright
 
 # Disable OpenTelemetry export during tests (no Jaeger in test environment)
 os.environ["OTEL_TRACES_EXPORTER"] = "none"
 
 # Use PostgreSQL for tests (same as production)
 # Default to localhost for local testing, use 'db' only in Docker/CI
-import platform
 default_host = "db" if platform.system() == "Linux" else "localhost"
 db_host = os.getenv("DB_HOST", default_host)
 database_url = f"postgresql://user:password@{db_host}:5432/habits"
@@ -74,7 +77,6 @@ def client(db):
 
 @pytest.fixture
 def auth_client(client, db):
-    from src.auth import hash_password
     # Register and login user
     client.post("/register", json={"username": "authuser", "password": "authpass123"})
     login_response = client.post("/login", json={"username": "authuser", "password": "authpass123"})
@@ -84,10 +86,6 @@ def auth_client(client, db):
     auth_client = TestClient(app)
     auth_client.headers.update({"Authorization": f"Bearer {token}"})
     yield auth_client
-
-# E2E Test Fixtures
-import time
-import requests
 
 @pytest.fixture
 def api_url():
@@ -104,7 +102,7 @@ def api_url():
     try:
         requests.get("http://localhost:8000/health", timeout=1)
         return "http://localhost:8000"
-    except:
+    except (requests.RequestException, Exception):
         return "http://localhost:8001"
 
 @pytest.fixture

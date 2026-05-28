@@ -3,7 +3,6 @@ Unit Tests for Auth Functions
 Test Type: Unit Testing - isolated function testing
 """
 import pytest
-from jose import JWTError
 from src.auth import (
     hash_password,
     verify_password,

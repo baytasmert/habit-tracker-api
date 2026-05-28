@@ -51,7 +51,7 @@ def test_multiple_habit_logs_for_streak(db):
     # Create 5 consecutive daily logs
     today = datetime.now().date()
     for i in range(5):
-        log_date = today - timedelta(days=4-i)
+        log_date = today - timedelta(days=4 - i)
         log = HabitLogFactory(habit=habit, log_date=log_date, done=True)
         db.add(log)
 

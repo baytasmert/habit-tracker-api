@@ -1,4 +1,3 @@
-import pytest
 from playwright.sync_api import Page, expect
 import time
 from tests.conftest import setup_authenticated_page

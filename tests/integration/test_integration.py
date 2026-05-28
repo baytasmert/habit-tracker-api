@@ -34,7 +34,7 @@ def test_track_habit(auth_client):
 
     # Check 2: dönen data'da done: true var mı?
     track_data = track_response.json()
-    assert track_data["done"] == True
+    assert track_data["done"] is True
 
 
 def test_get_streak(auth_client):

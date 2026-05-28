@@ -5,12 +5,11 @@ from testcontainers.postgres import PostgresContainer
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 import factory
+from src.database import Base
+from tests.factories import HabitFactory, HabitLogFactory
 
 # Disable Testcontainers Ryuk for Windows compatibility
 os.environ["TESTCONTAINERS_RYUK_DISABLED"] = "true"
-
-from src.database import Base
-from tests.factories import HabitFactory, HabitLogFactory
 
 # Testcontainers PostgreSQL setup for isolation
 postgres_container = None

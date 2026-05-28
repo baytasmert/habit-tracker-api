@@ -1,5 +1,5 @@
 import pytest
-from playwright.sync_api import sync_playwright, Page, Browser, BrowserContext
+from playwright.sync_api import sync_playwright
 import time
 import os
 import requests
@@ -14,7 +14,7 @@ def get_api_url():
     try:
         requests.get("http://localhost:8000/health", timeout=1)
         return "http://localhost:8000"
-    except:
+    except (requests.RequestException, Exception):
         return "http://localhost:8001"
 
 

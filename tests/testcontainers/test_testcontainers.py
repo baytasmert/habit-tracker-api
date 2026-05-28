@@ -4,14 +4,12 @@ import pytest
 from testcontainers.postgres import PostgresContainer
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-import factory
-
-# Disable Testcontainers Ryuk for Windows compatibility
-os.environ["TESTCONTAINERS_RYUK_DISABLED"] = "true"
-
 from src.database import Base
 from src.models import Habit, HabitLog
 from tests.factories import UserFactory, HabitFactory, HabitLogFactory
+
+# Disable Testcontainers Ryuk for Windows compatibility
+os.environ["TESTCONTAINERS_RYUK_DISABLED"] = "true"
 
 
 @pytest.fixture(scope="module")

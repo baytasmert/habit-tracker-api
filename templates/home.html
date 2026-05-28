@@ -183,6 +183,12 @@ async function loadHabits() {
         }, 0);
         document.getElementById('completedToday').textContent = completedCount;
 
+        // Update progress bar
+        const totalHabits = habits.length;
+        const progressPercent = totalHabits > 0 ? (completedCount / totalHabits) * 100 : 0;
+        document.getElementById('progressText').textContent = `${completedCount} / ${totalHabits}`;
+        document.getElementById('progressBar').style.width = `${progressPercent}%`;
+
         // Calculate longest streak
         calculateLongestStreak(habits);
 

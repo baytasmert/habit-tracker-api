@@ -199,15 +199,15 @@ def index(request: Request):
 
 
 @app.get("/home", response_class=templates.TemplateResponse.__class__)
-async def home(request: Request, current_user: User = Depends(get_current_user)):
-    """Authenticated home page with profile and stats"""
-    return templates.TemplateResponse("home.html", {"request": request, "user": current_user})
+async def home(request: Request):
+    """Authenticated home page with profile and stats (auth check in JavaScript)"""
+    return templates.TemplateResponse("home.html", {"request": request})
 
 
 @app.get("/my-habits", response_class=templates.TemplateResponse.__class__)
-async def habits_page(request: Request, current_user: User = Depends(get_current_user)):
-    """Habits management page"""
-    return templates.TemplateResponse("habits.html", {"request": request, "user": current_user})
+async def habits_page(request: Request):
+    """Habits management page (auth check in JavaScript)"""
+    return templates.TemplateResponse("habits.html", {"request": request})
 
 
 @app.get("/register", response_class=templates.TemplateResponse.__class__)

@@ -48,52 +48,60 @@
             line-height: 1.5;
         }
 
-        /* Sticky top navigation */
-        .tips-nav {
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            background: white;
-            border-bottom: 1px solid #e0e0e0;
+        /* Navigation - shared with welcome page */
+        .nav-bar {
             padding: 1rem 2rem;
             display: flex;
-            align-items: center;
             justify-content: space-between;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            align-items: center;
+            background: rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            z-index: 100;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
 
-        .nav-logo {
-            font-size: 1.2rem;
+        .nav-bar.sticky {
+            position: sticky;
+            top: 0;
+            background: white;
+            border-bottom: 1px solid #e0e0e0;
+            backdrop-filter: none;
+        }
+
+        .logo {
+            font-size: 1.5rem;
             font-weight: 700;
-            color: #0077be;
-            text-decoration: none;
+            letter-spacing: -0.5px;
             display: flex;
             align-items: center;
             gap: 0.5rem;
-        }
-
-        .nav-logo:hover {
-            opacity: 0.8;
-        }
-
-        .nav-spacer {
-            flex: 1;
-        }
-
-        .nav-back-link {
-            background: #0077be;
             color: white;
-            padding: 0.5rem 1rem;
-            border-radius: 6px;
-            text-decoration: none;
-            font-weight: 600;
-            font-size: 0.9rem;
-            transition: all 0.3s;
         }
 
-        .nav-back-link:hover {
-            background: #005a8f;
-            transform: translateX(-2px);
+        .nav-bar.sticky .logo {
+            color: #0077be;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            font-size: 0.95rem;
+            font-weight: 500;
+            transition: opacity 0.3s;
+            opacity: 0.9;
+        }
+
+        .nav-bar.sticky .nav-links a {
+            color: #0077be;
+        }
+
+        .nav-links a:hover {
+            opacity: 1;
         }
 
         .quick-nav {
@@ -529,17 +537,20 @@
         }
 
         @media (max-width: 768px) {
-            .tips-nav {
+            .nav-bar {
                 padding: 0.75rem 1rem;
             }
 
-            .nav-logo {
-                font-size: 1rem;
+            .logo {
+                font-size: 1.2rem;
             }
 
-            .nav-back-link {
-                padding: 0.4rem 0.8rem;
-                font-size: 0.8rem;
+            .nav-links {
+                gap: 1rem;
+            }
+
+            .nav-links a {
+                font-size: 0.85rem;
             }
 
             .tips-hero {
@@ -596,10 +607,12 @@
 <body>
     <div class="tips-page">
         <!-- Sticky Navigation -->
-        <nav class="tips-nav">
-            <a href="/" class="nav-logo" title="Back to home">🎯 Habit Tracker</a>
-            <div class="nav-spacer"></div>
-            <a href="/" class="nav-back-link" title="Back to home page">← Back to Home</a>
+        <nav class="nav-bar sticky">
+            <div class="logo">🎯 Habit Tracker</div>
+            <div class="nav-links">
+                <a href="/" title="Back to home page">← Home</a>
+                <a href="/login" title="Sign in to your account">Sign In</a>
+            </div>
         </nav>
 
         <!-- Header -->

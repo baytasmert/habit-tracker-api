@@ -12,17 +12,8 @@
     <div class="admin-content">
         <section class="admin-section">
             <h2>System Health Status</h2>
-            <div class="health-grid">
-                <div id="apiHealth" class="health-card">
-                    <h3>API Server</h3>
-                    <div class="status pending">Checking...</div>
-                    <p id="apiDetails"></p>
-                </div>
-                <div id="dbHealth" class="health-card">
-                    <h3>PostgreSQL Database</h3>
-                    <div class="status pending">Checking...</div>
-                    <p id="dbDetails"></p>
-                </div>
+            <div id="healthStatus" class="health-grid">
+                <p class="loading">Checking services...</p>
             </div>
         </section>
 
@@ -65,42 +56,45 @@ if (!token) {
 
 async function checkHealth() {
     try {
-        const response = await fetch('/health', {
+        const response = await fetch('/admin/health', {
             headers: { 'Authorization': `Bearer ${token}` }
         });
 
-        const apiStatusEl = document.getElementById('apiHealth').querySelector('.status');
-        if (response.ok) {
-            apiStatusEl.textContent = '✓ Healthy';
-            apiStatusEl.className = 'status healthy';
-            document.getElementById('apiDetails').textContent = 'API is running';
-        } else {
-            apiStatusEl.textContent = '✗ Unhealthy';
-            apiStatusEl.className = 'status unhealthy';
-            document.getElementById('apiDetails').textContent = 'Status: ' + response.status;
+        if (!response.ok) {
+            document.getElementById('healthStatus').innerHTML = '<p class="error">Failed to load health status</p>';
+            return;
         }
-    } catch (error) {
-        const apiStatusEl = document.getElementById('apiHealth').querySelector('.status');
-        apiStatusEl.textContent = '✗ Offline';
-        apiStatusEl.className = 'status offline';
-        document.getElementById('apiDetails').textContent = error.message;
-    }
 
-    // Check database via API
-    try {
-        const response = await fetch('/health', {
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-        const dbStatusEl = document.getElementById('dbHealth').querySelector('.status');
-        if (response.ok) {
-            dbStatusEl.textContent = '✓ Healthy';
-            dbStatusEl.className = 'status healthy';
-            document.getElementById('dbDetails').textContent = 'Connected';
+        const data = await response.json();
+        const healthGrid = document.getElementById('healthStatus');
+
+        let html = '';
+        for (const [key, service] of Object.entries(data.services)) {
+            const statusClass = service.status === 'healthy' ? 'healthy' :
+                               service.status === 'unhealthy' ? 'unhealthy' : 'offline';
+            const statusIcon = service.status === 'healthy' ? '✓' : '✗';
+
+            let cardHtml = `
+                <div class="health-card status-${statusClass}">
+                    <div class="health-card-header">
+                        <h3>${service.display_name}</h3>
+                        <span class="status ${statusClass}">${statusIcon} ${service.status}</span>
+                    </div>
+                    <p class="health-message">${service.message}</p>
+            `;
+
+            if (service.local_url) {
+                cardHtml += `<a href="${service.local_url}" target="_blank" class="btn btn-small btn-outline">Open</a>`;
+            }
+
+            cardHtml += '</div>';
+            html += cardHtml;
         }
+
+        healthGrid.innerHTML = html;
     } catch (error) {
-        const dbStatusEl = document.getElementById('dbHealth').querySelector('.status');
-        dbStatusEl.textContent = '✗ Offline';
-        dbStatusEl.className = 'status offline';
+        console.error('Health check error:', error);
+        document.getElementById('healthStatus').innerHTML = `<p class="error">Error: ${error.message}</p>`;
     }
 }
 

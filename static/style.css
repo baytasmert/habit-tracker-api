@@ -609,12 +609,46 @@ a:hover {
     background: white;
     padding: 1.5rem;
     border-radius: 8px;
-    border: 1px solid var(--border);
+    border: 2px solid var(--border);
+    transition: all 0.3s ease;
+}
+
+.health-card.status-healthy {
+    border-color: var(--success);
+    background: rgba(39, 174, 96, 0.05);
+}
+
+.health-card.status-unhealthy {
+    border-color: var(--warning);
+    background: rgba(243, 156, 18, 0.05);
+}
+
+.health-card.status-offline {
+    border-color: var(--danger);
+    background: rgba(231, 76, 60, 0.05);
+}
+
+.health-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
 }
 
 .health-card h3 {
-    margin-bottom: 1rem;
+    margin: 0;
     font-size: 1rem;
+    flex: 1;
+}
+
+.health-message {
+    color: var(--text-light);
+    font-size: 0.9rem;
+    margin: 0.5rem 0 1rem 0;
+}
+
+.health-card .btn {
+    margin-top: 0.5rem;
 }
 
 .status {

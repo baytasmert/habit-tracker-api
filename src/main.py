@@ -171,6 +171,90 @@ def health():
     return {"status": "ok"}
 
 
+@app.get("/admin/health")
+async def admin_health(current_user: User = Depends(get_current_user)):
+    """Comprehensive health check for all services - admin only"""
+    if not current_user.is_admin:
+        raise HTTPException(status_code=403, detail="Admin access required")
+
+    import aiohttp
+
+    services = [
+        {
+            "name": "api",
+            "url": "http://localhost:8000/health",
+            "display_name": "API Server",
+            "local_url": "http://localhost:8001"
+        },
+        {
+            "name": "db",
+            "url": "postgresql://user:password@db:5432/habits",
+            "display_name": "PostgreSQL Database",
+            "check_type": "postgres"
+        },
+        {
+            "name": "prometheus",
+            "url": "http://prometheus:9090/-/healthy",
+            "display_name": "Prometheus Metrics",
+            "local_url": "http://localhost:9090"
+        },
+        {
+            "name": "grafana",
+            "url": "http://grafana:3000/api/health",
+            "display_name": "Grafana Dashboards",
+            "local_url": "http://localhost:3000"
+        },
+        {
+            "name": "jaeger",
+            "url": "http://jaeger:16686/api/services",
+            "display_name": "Jaeger Tracing",
+            "local_url": "http://localhost:16686"
+        },
+        {
+            "name": "s3",
+            "url": "http://localstack:4566/_localstack/health",
+            "display_name": "LocalStack (S3)",
+            "local_url": "http://localhost:4566"
+        }
+    ]
+
+    results = {}
+
+    for service in services:
+        try:
+            if service.get("check_type") == "postgres":
+                from sqlalchemy import text
+                db = next(get_db())
+                db.execute(text("SELECT 1"))
+                results[service["name"]] = {
+                    "status": "healthy",
+                    "message": "Connected",
+                    "display_name": service["display_name"],
+                    "local_url": service.get("local_url")
+                }
+            else:
+                async with aiohttp.ClientSession() as session:
+                    async with session.get(service["url"], timeout=aiohttp.ClientTimeout(total=5)) as response:
+                        results[service["name"]] = {
+                            "status": "healthy" if response.status == 200 else "unhealthy",
+                            "message": f"Status {response.status}",
+                            "display_name": service["display_name"],
+                            "local_url": service.get("local_url")
+                        }
+        except Exception as e:
+            results[service["name"]] = {
+                "status": "offline",
+                "message": str(e),
+                "display_name": service["display_name"],
+                "local_url": service.get("local_url")
+            }
+
+    return {
+        "timestamp": datetime.utcnow().isoformat(),
+        "services": results
+    }
+
+
 @app.get("/metrics")
 def get_metrics():
     from prometheus_client import generate_latest, REGISTRY

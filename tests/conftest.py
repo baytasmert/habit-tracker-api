@@ -5,6 +5,9 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 import factory
 
+# Disable OpenTelemetry export during tests (no Jaeger in test environment)
+os.environ["OTEL_TRACES_EXPORTER"] = "none"
+
 # Use PostgreSQL for tests (same as production)
 # Use 'db' host when in Docker container, otherwise 'localhost'
 db_host = os.getenv("DB_HOST", "db")

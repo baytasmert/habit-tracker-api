@@ -276,10 +276,10 @@ async def edit_habit_page(request: Request):
     return templates.TemplateResponse("habit_detail.html", {"request": request, "habit_id": habit_id})
 
 
-@app.get("/logout")
-async def logout_page():
-    """Logout, clear cookie and redirect to login"""
-    response = RedirectResponse(url="/login", status_code=302)
+@app.get("/logout", response_class=templates.TemplateResponse.__class__)
+async def logout_page(request: Request):
+    """Logout - clear cookie and localStorage, then redirect to login"""
+    response = templates.TemplateResponse("logout.html", {"request": request})
     response.delete_cookie(key="auth_token")
     return response
 

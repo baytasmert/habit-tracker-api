@@ -24,6 +24,7 @@ jobs:
   # ─────────────────────────────────────────────────────────────────
   lint:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
       
@@ -45,6 +46,7 @@ jobs:
   # ─────────────────────────────────────────────────────────────────
   test:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     services:
       # 🐘 PostgreSQL Container Başlatılıyor (5432)
       # Test database'i için kullanılıyor
@@ -109,6 +111,7 @@ jobs:
   # ─────────────────────────────────────────────────────────────────
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     needs: [lint, test]
     permissions:
       contents: read
@@ -140,6 +143,7 @@ jobs:
 
   deploy-and-test:
     runs-on: ubuntu-latest
+    timeout-minutes: 25
     needs: build
 
     steps:
@@ -255,6 +259,7 @@ jobs:
   # ─────────────────────────────────────────────────────────────────
   smoke-test:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     needs: build
     services:
       postgres:
@@ -327,6 +332,7 @@ jobs:
   # ─────────────────────────────────────────────────────────────────
   load-test:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     needs: build
     services:
       postgres:

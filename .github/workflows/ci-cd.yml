@@ -86,30 +86,8 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Install Playwright browsers
-        run: playwright install chromium
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
-
-      - name: Build and start API with docker-compose
-        run: |
-          docker-compose up -d
-          echo "Waiting for API to be ready..."
-          for i in {1..30}; do
-            if curl -f http://localhost:8001/health 2>/dev/null; then
-              echo "API is ready!"
-              exit 0
-            fi
-            echo "Attempt $i/30 - waiting for API..."
-            sleep 2
-          done
-          echo "API failed to start!"
-          docker-compose logs api
-          exit 1
-
-      - name: Run unit and integration tests
-        run: pytest tests/unit tests/integration tests/testcontainers -v --cov=src --cov-fail-under=70 --cov-report=xml
+      - name: Run tests with coverage (excluding E2E tests)
+        run: pytest tests/ -v --ignore=tests/e2e --cov=src --cov-fail-under=70 --cov-report=xml
         env:
           DATABASE_URL: postgresql://user:password@localhost:5432/habits
           DB_HOST: localhost
@@ -117,11 +95,6 @@ jobs:
           AWS_REGION: us-east-1
           AWS_ACCESS_KEY_ID: test
           AWS_SECRET_ACCESS_KEY: test
-
-      - name: Run E2E tests with Playwright
-        run: pytest tests/e2e -v --tb=short
-        env:
-          API_URL: http://localhost:8001
 
       - name: Upload coverage report
         uses: codecov/codecov-action@v3
@@ -274,6 +247,21 @@ jobs:
         with:
           name: newman-results
           path: postman-results.json
+
+      - name: Set up Python for E2E tests
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies for E2E tests
+        run: |
+          pip install playwright pytest pytest-playwright
+          playwright install chromium
+
+      - name: Run E2E tests with Playwright
+        run: pytest tests/e2e -v --tb=short
+        env:
+          API_URL: http://localhost:8001
 
       - name: Debug - Show pod logs on failure
         if: failure()

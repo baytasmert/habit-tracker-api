@@ -9,8 +9,10 @@ import factory
 os.environ["OTEL_TRACES_EXPORTER"] = "none"
 
 # Use PostgreSQL for tests (same as production)
-# Use 'db' host when in Docker container, otherwise 'localhost'
-db_host = os.getenv("DB_HOST", "db")
+# Default to localhost for local testing, use 'db' only in Docker/CI
+import platform
+default_host = "db" if platform.system() == "Linux" else "localhost"
+db_host = os.getenv("DB_HOST", default_host)
 database_url = f"postgresql://user:password@{db_host}:5432/habits"
 os.environ["DATABASE_URL"] = database_url
 

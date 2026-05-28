@@ -43,15 +43,12 @@
     <div class="action-buttons">
         <a href="/create-habit" class="btn btn-primary btn-large">+ Create New Habit</a>
         <a href="/my-habits" class="btn btn-secondary btn-large">Manage Habits</a>
-        <a href="/admin" class="btn btn-outline btn-large">Admin Panel</a>
     </div>
 </div>
 {% endblock %}
 
 {% block scripts %}
 <script>
-const token = localStorage.getItem('auth_token');
-
 async function loadProfile() {
     if (!token) {
         window.location.href = '/login';

@@ -20,8 +20,6 @@
 
 {% block scripts %}
 <script>
-const token = localStorage.getItem('auth_token');
-
 async function loadHabits() {
     if (!token) {
         window.location.href = '/login';

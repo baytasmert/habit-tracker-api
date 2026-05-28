@@ -9,10 +9,10 @@
 <body>
     <nav class="navbar">
         <div class="nav-container">
-            <a href="/" class="logo">Habit Tracker</a>
+            <a id="logoLink" href="/" class="logo">🎯 Alışkanlık Takip</a>
             <div class="nav-links" id="navLinks">
-                <a href="/register">Register</a>
-                <a href="/login">Login</a>
+                <a href="/register">Kaydol</a>
+                <a href="/login">Giriş Yap</a>
             </div>
         </div>
     </nav>
@@ -33,16 +33,24 @@
     </footer>
 
     <script>
-        // Update navbar when authenticated
+        // Update navbar and logo when authenticated
         const token = localStorage.getItem('auth_token');
+        const logoLink = document.getElementById('logoLink');
+
         if (token) {
+            // Logged in: logo goes to home
+            logoLink.href = '/home';
+
             const navLinks = document.getElementById('navLinks');
             navLinks.innerHTML = `
-                <a href="/home">Home</a>
-                <a href="/my-habits">Habits</a>
-                <a href="/profile">Profile</a>
-                <a href="/logout">Logout</a>
+                <a href="/home">Anasayfa</a>
+                <a href="/my-habits">Alışkanlıklar</a>
+                <a href="/profile">Profil</a>
+                <a href="/logout">Çıkış Yap</a>
             `;
+        } else {
+            // Not logged in: logo goes to landing
+            logoLink.href = '/';
         }
     </script>
     {% block scripts %}{% endblock %}

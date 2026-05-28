@@ -121,6 +121,9 @@ async function loadHabits() {
         }, 0);
         document.getElementById('completedToday').textContent = completedCount;
 
+        // Calculate longest streak
+        calculateLongestStreak(habits);
+
         // Show recent habits (first 3)
         const recentHabits = habits.slice(0, 3);
         const habitsList = document.getElementById('recentHabitsList');
@@ -171,19 +174,23 @@ async function loadHabits() {
     }
 }
 
-function calculateStats(habits) {
-    let thisWeek = 0;
-    let longestStreak = 0;
-
+function calculateLongestStreak(habits) {
+    let maxStreak = 0;
     habits.forEach(habit => {
-        // Simple estimation - in a real app, you'd calculate from HabitLog data
-        if (habit.goal_days_per_week) {
-            thisWeek += Math.min(habit.goal_days_per_week, 7);
+        if (habit.logs && habit.logs.length > 0) {
+            // Simple approach: count consecutive days from most recent log
+            let streakCount = 0;
+            for (let i = habit.logs.length - 1; i >= 0; i--) {
+                if (habit.logs[i].done) {
+                    streakCount++;
+                } else {
+                    break;
+                }
+            }
+            maxStreak = Math.max(maxStreak, streakCount);
         }
     });
-
-    document.getElementById('thisWeek').textContent = thisWeek;
-    document.getElementById('longestStreak').textContent = Math.max(0, habits.length);
+    document.getElementById('longestStreak').textContent = maxStreak;
 }
 
 loadProfile();

@@ -73,12 +73,19 @@ async function loadHabitDetail() {
 
             <div class="habit-stats">
                 <div class="stat">
-                    <span class="stat-label">Goal:</span>
-                    <span class="stat-value">${habit.goal_days_per_week} days/week</span>
+                    <span class="stat-label">Hedef:</span>
+                    <span class="stat-value">${habit.goal_days_per_week} gün/hafta</span>
                 </div>
                 <div class="stat">
-                    <span class="stat-label">Current Streak:</span>
-                    <span class="stat-value">${streakData ? streakData.streak_days + ' days' : '0 days'}</span>
+                    <span class="stat-label">Mevcut Seri:</span>
+                    <span class="stat-value">${streakData ? streakData.streak_days + ' gün' : '0 gün'}</span>
+                </div>
+            </div>
+
+            <div id="logsHistory" style="margin-top: 2rem; padding: 1.5rem; background: #f8f9fa; border-radius: 8px;">
+                <h3>📋 Takip Kaydları (Son 10)</h3>
+                <div id="logsList" style="margin-top: 1rem;">
+                    <p style="color: #999;">Yükleniyor...</p>
                 </div>
             </div>
 
@@ -202,9 +209,42 @@ async function loadHabitDetail() {
             });
         }
 
+        // Load and display logs history
+        loadAndDisplayLogs(habit.logs || []);
+
     } catch (error) {
         document.getElementById('habitDetail').innerHTML = `<p class="error">Error: ${error.message}</p>`;
     }
+}
+
+function loadAndDisplayLogs(logs) {
+    const logsList = document.getElementById('logsList');
+
+    if (!logs || logs.length === 0) {
+        logsList.innerHTML = '<p style="color: #999;">Henüz takip kaydı yok</p>';
+        return;
+    }
+
+    // Show last 10 logs, newest first
+    const recentLogs = logs.slice().reverse().slice(0, 10);
+
+    logsList.innerHTML = recentLogs.map(log => {
+        const date = new Date(log.log_date).toLocaleDateString('tr-TR');
+        const status = log.done ? '✅ Tamamlandı' : '❌ Yapılmadı';
+        const mood = log.mood_emoji ? ` ${log.mood_emoji}` : '';
+        const duration = log.duration ? ` (${log.duration} dk)` : '';
+
+        return `
+            <div style="padding: 0.75rem; background: white; border-radius: 6px; margin-bottom: 0.5rem; border-left: 3px solid #0077be;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <strong>${date}</strong> - ${status}${mood}${duration}
+                    </div>
+                </div>
+                ${log.notes ? `<small style="color: #666; display: block; margin-top: 0.3rem;">Not: ${log.notes}</small>` : ''}
+            </div>
+        `;
+    }).join('');
 }
 
 function trackHabit() {

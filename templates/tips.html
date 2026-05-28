@@ -19,7 +19,7 @@
         .tips-hero {
             background: linear-gradient(135deg, #0077be 0%, #0d7d7a 50%, #6dd5ed 100%);
             color: white;
-            padding: 4rem 2rem;
+            padding: 2rem 2rem;
             text-align: center;
         }
 
@@ -29,21 +29,23 @@
         }
 
         .tips-hero h1 {
-            font-size: clamp(2rem, 6vw, 3rem);
-            margin-bottom: 1rem;
+            font-size: clamp(1.8rem, 5vw, 2.5rem);
+            margin-bottom: 0.5rem;
             font-weight: 900;
+            text-shadow: 0 2px 8px rgba(0,0,0,0.3);
         }
 
         .tips-hero .lead {
-            font-size: 1.3rem;
-            margin-bottom: 0.5rem;
-            opacity: 0.95;
+            font-size: 1.1rem;
+            margin-bottom: 0.4rem;
+            opacity: 1;
+            font-weight: 600;
         }
 
         .tips-hero .description {
-            font-size: 1.1rem;
-            opacity: 0.85;
-            line-height: 1.6;
+            font-size: 0.95rem;
+            opacity: 0.9;
+            line-height: 1.5;
         }
 
         /* Sticky top navigation */
@@ -97,8 +99,8 @@
         .quick-nav {
             display: flex;
             justify-content: center;
-            gap: 1rem;
-            padding: 2rem;
+            gap: 0.8rem;
+            padding: 1rem;
             flex-wrap: wrap;
             background: white;
             border-bottom: 1px solid #eee;
@@ -108,12 +110,13 @@
         }
 
         .nav-link {
-            padding: 0.75rem 1.5rem;
+            padding: 0.5rem 1rem;
             background: #f0f0f0;
             color: #0077be;
             text-decoration: none;
             border-radius: 6px;
             font-weight: 600;
+            font-size: 0.9rem;
             transition: all 0.3s;
         }
 
@@ -126,29 +129,29 @@
         .tips-section {
             max-width: 1000px;
             margin: 0 auto;
-            padding: 4rem 2rem;
+            padding: 2.5rem 2rem;
             border-bottom: 1px solid #eee;
         }
 
         .section-header {
             text-align: center;
-            margin-bottom: 3rem;
+            margin-bottom: 2rem;
         }
 
         .section-icon {
-            font-size: 3rem;
+            font-size: 2.5rem;
             display: block;
-            margin-bottom: 1rem;
+            margin-bottom: 0.5rem;
         }
 
         .section-header h2 {
-            font-size: 2.5rem;
-            margin-bottom: 0.5rem;
+            font-size: 2rem;
+            margin-bottom: 0.3rem;
             color: #0077be;
         }
 
         .section-header p {
-            font-size: 1.1rem;
+            font-size: 0.95rem;
             color: #666;
         }
 
@@ -450,45 +453,47 @@
         .start-cta {
             text-align: center;
             background: linear-gradient(135deg, rgba(0,119,190,0.1) 0%, rgba(109,213,237,0.1) 100%);
-            padding: 3rem 2rem;
+            padding: 2rem;
             border-radius: 12px;
-            margin: 2rem 0;
+            margin: 1.5rem 0;
         }
 
         .start-cta h2 {
             color: #0077be;
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.4rem;
+            font-size: 1.5rem;
         }
 
         .start-cta p {
-            margin-bottom: 1.5rem;
+            margin-bottom: 1rem;
+            font-size: 0.95rem;
         }
 
         .quote-section {
             background: white;
-            padding: 3rem 2rem;
+            padding: 2rem;
             text-align: center;
             border-top: 1px solid #eee;
         }
 
         blockquote {
-            font-size: 1.4rem;
+            font-size: 1.2rem;
             font-weight: 500;
             color: #0077be;
-            margin-bottom: 1rem;
+            margin-bottom: 0.5rem;
             font-style: italic;
         }
 
         cite {
-            font-size: 1rem;
+            font-size: 0.9rem;
             color: #666;
             display: block;
         }
 
         .quote-explanation {
             color: #666;
-            margin-top: 1.5rem;
-            font-size: 1rem;
+            margin-top: 1rem;
+            font-size: 0.95rem;
         }
 
         .btn {
@@ -538,7 +543,20 @@
             }
 
             .tips-hero {
-                padding: 2rem 1rem;
+                padding: 1.5rem 1rem;
+            }
+
+            .tips-hero h1 {
+                font-size: 1.5rem;
+                margin-bottom: 0.3rem;
+            }
+
+            .tips-hero .lead {
+                font-size: 1rem;
+            }
+
+            .tips-hero .description {
+                font-size: 0.9rem;
             }
 
             .tips-section {

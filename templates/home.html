@@ -43,6 +43,56 @@
         </div>
     </div>
 
+    <!-- Tracking Modal -->
+    <div id="trackingModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1000; padding: 2rem;">
+        <div style="background: white; max-width: 500px; margin: 2rem auto; border-radius: 12px; padding: 2rem; box-shadow: 0 10px 40px rgba(0,0,0,0.2);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                <h2 id="modalTitle">Takip Et</h2>
+                <button onclick="closeTrackingModal()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #999;">✕</button>
+            </div>
+
+            <form id="quickTrackForm" onsubmit="quickTrackHabit(event)">
+                <div class="form-group" style="margin-bottom: 1rem;">
+                    <label style="display: flex; align-items: center; cursor: pointer;">
+                        <input type="checkbox" id="quickDone" name="done" style="margin-right: 0.5rem; width: 18px; height: 18px;">
+                        <span><strong>Tamamladım</strong></span>
+                    </label>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 1rem;">
+                    <label for="quickDuration"><strong>Harcanan süre (dakika):</strong></label>
+                    <input type="number" id="quickDuration" name="duration" min="0" placeholder="30" style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 6px;">
+                </div>
+
+                <div class="form-group" style="margin-bottom: 1rem;">
+                    <label><strong>Ruh halin?</strong></label>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <button type="button" class="mood-btn" data-mood="😢" style="font-size: 1.8rem; padding: 0.5rem; background: none; border: 2px solid #ddd; border-radius: 6px; cursor: pointer;">😢</button>
+                        <button type="button" class="mood-btn" data-mood="😐" style="font-size: 1.8rem; padding: 0.5rem; background: none; border: 2px solid #ddd; border-radius: 6px; cursor: pointer;">😐</button>
+                        <button type="button" class="mood-btn" data-mood="😊" style="font-size: 1.8rem; padding: 0.5rem; background: none; border: 2px solid #ddd; border-radius: 6px; cursor: pointer;">😊</button>
+                        <button type="button" class="mood-btn" data-mood="😄" style="font-size: 1.8rem; padding: 0.5rem; background: none; border: 2px solid #ddd; border-radius: 6px; cursor: pointer;">😄</button>
+                        <button type="button" class="mood-btn" data-mood="😍" style="font-size: 1.8rem; padding: 0.5rem; background: none; border: 2px solid #ddd; border-radius: 6px; cursor: pointer;">😍</button>
+                    </div>
+                    <input type="hidden" id="quickMood" name="mood_emoji">
+                </div>
+
+                <div class="form-group" style="margin-bottom: 1.5rem;">
+                    <label for="quickNotes"><strong>Not (opsiyonel):</strong></label>
+                    <textarea id="quickNotes" name="notes" placeholder="Nasıl geçti?" rows="2" style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 6px;"></textarea>
+                </div>
+
+                <div style="display: flex; gap: 1rem;">
+                    <button type="submit" class="btn btn-primary" style="flex: 1;">Kaydet</button>
+                    <button type="button" onclick="closeTrackingModal()" class="btn btn-secondary" style="flex: 1;">İptal</button>
+                </div>
+            </form>
+
+            <div id="trackSuccess" style="display: none; margin-top: 1rem; padding: 1rem; background: #d4edda; color: #155724; border-radius: 6px; text-align: center;">
+                ✅ <strong>Kaydedildi!</strong>
+            </div>
+        </div>
+    </div>
+
     <div class="action-buttons">
         <a href="/create-habit" class="btn btn-primary btn-large">+ Create New Habit</a>
         <a href="/my-habits" class="btn btn-secondary btn-large">Manage Habits</a>
@@ -124,7 +174,7 @@ async function loadHabits() {
         // Calculate longest streak
         calculateLongestStreak(habits);
 
-        // Show recent habits (first 3)
+        // Show recent habits with inline tracking (first 3)
         const recentHabits = habits.slice(0, 3);
         const habitsList = document.getElementById('recentHabitsList');
 
@@ -158,7 +208,7 @@ async function loadHabits() {
                         </div>
                         <p class="habit-card-last-tracked">Günlük takip: ${lastTracked}</p>
                         <div class="habit-card-actions">
-                            <a href="/habit-detail?id=${habit.id}" class="btn btn-small btn-primary">Takip Et</a>
+                            <button onclick="openTrackingModal(${habit.id}, '${habit.name.replace(/'/g, "\\'")}', ${habit.is_negative})" class="btn btn-small btn-primary" style="border: none; cursor: pointer;">Takip Et</button>
                             <a href="/edit-habit?id=${habit.id}" class="btn btn-small btn-secondary">Düzenle</a>
                         </div>
                     </div>
@@ -166,8 +216,8 @@ async function loadHabits() {
             `;
         }).join('');
 
-        // Calculate stats
-        calculateStats(habits);
+        // Calculate longest streak
+        calculateLongestStreak(habits);
     } catch (error) {
         console.error('Error loading habits:', error);
         document.getElementById('recentHabitsList').innerHTML = `<p class="error">Error loading habits</p>`;
@@ -205,5 +255,93 @@ document.addEventListener('visibilitychange', () => {
         }
     }
 });
+
+// Tracking Modal Functions
+let currentTrackingHabitId = null;
+let currentTrackingHabitName = null;
+let currentTrackingIsNegative = false;
+
+function openTrackingModal(habitId, habitName, isNegative) {
+    currentTrackingHabitId = habitId;
+    currentTrackingHabitName = habitName;
+    currentTrackingIsNegative = isNegative;
+
+    document.getElementById('modalTitle').textContent = habitName;
+    document.getElementById('trackingModal').style.display = 'block';
+    document.getElementById('trackSuccess').style.display = 'none';
+    document.getElementById('quickTrackForm').style.display = 'block';
+
+    // Reset form
+    document.getElementById('quickDone').checked = false;
+    document.getElementById('quickDuration').value = '';
+    document.getElementById('quickMood').value = '';
+    document.getElementById('quickNotes').value = '';
+    document.querySelectorAll('.mood-btn').forEach(b => b.style.borderColor = '#ddd');
+
+    // Update label for negative habits
+    const doneLabel = document.querySelector('label[for="quickDone"] span');
+    if (isNegative) {
+        doneLabel.textContent = 'Dirençdim / Yapamadım';
+    } else {
+        doneLabel.textContent = 'Tamamladım';
+    }
+}
+
+function closeTrackingModal() {
+    document.getElementById('trackingModal').style.display = 'none';
+}
+
+// Mood button listeners
+document.querySelectorAll('.mood-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        document.querySelectorAll('.mood-btn').forEach(b => b.style.borderColor = '#ddd');
+        btn.style.borderColor = '#0077be';
+        btn.style.borderWidth = '3px';
+        document.getElementById('quickMood').value = btn.dataset.mood;
+    });
+});
+
+async function quickTrackHabit(event) {
+    event.preventDefault();
+
+    const done = document.getElementById('quickDone').checked;
+    const duration = parseInt(document.getElementById('quickDuration').value) || 0;
+    const moodEmoji = document.getElementById('quickMood').value;
+    const notes = document.getElementById('quickNotes').value;
+
+    try {
+        const response = await fetch(`/habits/${currentTrackingHabitId}/track`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                done,
+                duration,
+                mood_emoji: moodEmoji || null,
+                notes: notes || null
+            })
+        });
+
+        if (!response.ok) {
+            alert('Kayıt başarısız oldu');
+            return;
+        }
+
+        // Show success message
+        document.getElementById('quickTrackForm').style.display = 'none';
+        document.getElementById('trackSuccess').style.display = 'block';
+
+        // Reload habits after 1.5 seconds
+        setTimeout(() => {
+            closeTrackingModal();
+            loadHabits();
+        }, 1500);
+    } catch (error) {
+        alert('Hata: ' + error.message);
+    }
+}
 </script>
 {% endblock %}

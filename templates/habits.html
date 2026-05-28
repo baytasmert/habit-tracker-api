@@ -57,7 +57,7 @@ async function loadHabits() {
             <div class="habit-card">
                 <div class="habit-card-header">
                     <h3>${habit.name || 'Untitled'}</h3>
-                    <button class="btn-icon" onclick="deleteHabit(${habit.id}, '${habit.name}')">
+                    <button class="btn-icon" onclick="deleteHabit(${habit.id})">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <polyline points="3 6 5 6 21 6"></polyline>
                             <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
@@ -79,8 +79,8 @@ async function loadHabits() {
     }
 }
 
-async function deleteHabit(habitId, habitName) {
-    if (!confirm(`Delete "${habitName}"? This action cannot be undone.`)) {
+async function deleteHabit(habitId) {
+    if (!confirm('Delete this habit? This action cannot be undone.')) {
         return;
     }
 
@@ -110,14 +110,15 @@ async function trackHabit(habitId) {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ habit_id: habitId, date: new Date().toISOString().split('T')[0] })
+            body: JSON.stringify({ done: true })
         });
 
         if (response.ok) {
             alert('Habit tracked! Great job! 🎉');
             loadHabits();
         } else {
-            alert('Failed to track habit');
+            const error = await response.json();
+            alert('Failed to track habit: ' + (error.detail || 'Unknown error'));
         }
     } catch (error) {
         alert('Error: ' + error.message);

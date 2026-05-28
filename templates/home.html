@@ -70,9 +70,10 @@ async function loadProfile() {
 
         if (response.ok) {
             const user = await response.json();
+            localStorage.setItem('currentUser', JSON.stringify(user));
             document.getElementById('username').textContent = user.username || 'User';
             document.getElementById('userEmail').textContent = user.email || '';
-            document.getElementById('avatarImage').src = `/avatars/${user.id}`;
+            document.getElementById('avatarImage').src = `/avatars/${user.id}?t=${Date.now()}`;
         }
     } catch (error) {
         console.error('Error loading profile:', error);
@@ -151,5 +152,15 @@ function calculateStats(habits) {
 
 loadProfile();
 loadHabits();
+
+// Refresh avatar when tab becomes visible (user returns to tab)
+document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) {
+        const user = JSON.parse(localStorage.getItem('currentUser') || '{}');
+        if (user.id) {
+            document.getElementById('avatarImage').src = `/avatars/${user.id}?t=${Date.now()}`;
+        }
+    }
+});
 </script>
 {% endblock %}

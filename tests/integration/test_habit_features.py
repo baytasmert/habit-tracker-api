@@ -213,25 +213,23 @@ class TestAnalytics:
 class TestStreakCalculation:
     """Test streak calculation edge cases"""
 
-    @pytest.mark.xfail(reason="Test logic issue: gap is in future, doesn't affect current streak")
     def test_streak_with_gaps(self, auth_client):
         """Streak should break with gaps"""
         create_resp = auth_client.post("/habits", json={"name": "Exercise"})
         habit_id = create_resp.json()["id"]
 
-        # Track 3 consecutive days
-        for i in range(3):
-            date_str = (date.today() - timedelta(days=2 - i)).isoformat()
-            auth_client.post(f"/habits/{habit_id}/track", json={"done": True, "date": date_str})
+        # Track 3 days with a gap in the middle
+        three_days_ago = (date.today() - timedelta(days=3)).isoformat()
+        auth_client.post(f"/habits/{habit_id}/track", json={"done": True, "date": three_days_ago})
 
-        # Gap day
-        gap_date = (date.today() - timedelta(days=-1)).isoformat()
-        auth_client.post(f"/habits/{habit_id}/track", json={"done": False, "date": gap_date})
+        # Gap day (2 days ago - not tracked)
+        # This breaks the streak
 
-        # Track today
-        auth_client.post(f"/habits/{habit_id}/track", json={"done": True})
+        # Track after the gap
+        today = date.today().isoformat()
+        auth_client.post(f"/habits/{habit_id}/track", json={"done": True, "date": today})
 
-        # Streak should be 1 (reset by gap)
+        # Streak should be 1 (only counts from today onwards after gap)
         streak_resp = auth_client.get(f"/habits/{habit_id}/streak")
         streak = streak_resp.json()["streak_days"]
         assert streak == 1

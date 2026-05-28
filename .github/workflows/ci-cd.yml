@@ -37,7 +37,7 @@ jobs:
         run: pip install -r requirements.txt
       
       - name: Lint with flake8
-        run: flake8 src/ --max-line-length=120
+        run: flake8 . --max-line-length=120 --exclude=.git,__pycache__,.pytest_cache,.venv
 
   # ─────────────────────────────────────────────────────────────────
   # JOB 2: TEST (Unit + Integration testler)
@@ -255,7 +255,7 @@ jobs:
 
       - name: Install dependencies for E2E tests
         run: |
-          pip install playwright pytest pytest-playwright
+          pip install -r requirements.txt
           playwright install chromium
 
       - name: Run E2E tests with Playwright
@@ -271,11 +271,12 @@ jobs:
 
   # ─────────────────────────────────────────────────────────────────
   # JOB 5: SMOKE TEST (k6 - 5 VU, 30s)
+  # Çalıştırılır: deploy-and-test SONRA (deployed app'ı test et)
   # ─────────────────────────────────────────────────────────────────
   smoke-test:
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    needs: build
+    needs: deploy-and-test
     services:
       postgres:
         image: postgres:16
@@ -344,11 +345,12 @@ jobs:
 
   # ─────────────────────────────────────────────────────────────────
   # JOB 6: LOAD TEST (k6 - 10→100 VU, 1 min)
+  # Çalıştırılır: smoke-test SONRA (sırayla, stress test)
   # ─────────────────────────────────────────────────────────────────
   load-test:
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    needs: build
+    needs: smoke-test
     services:
       postgres:
         image: postgres:16

@@ -84,3 +84,54 @@ def auth_client(client, db):
     auth_client = TestClient(app)
     auth_client.headers.update({"Authorization": f"Bearer {token}"})
     yield auth_client
+
+# E2E Test Fixtures
+import time
+import requests
+
+@pytest.fixture
+def api_url():
+    """Return API base URL for E2E tests"""
+    return os.getenv("API_URL", "http://localhost:8001")
+
+@pytest.fixture
+def test_user():
+    """Generate unique test user credentials"""
+    timestamp = int(time.time() * 1000)
+    return {
+        "username": f"testuser_{timestamp}",
+        "password": "testpass123",
+        "email": f"testuser_{timestamp}@example.com"
+    }
+
+@pytest.fixture
+def authenticated_user(api_url, test_user):
+    """Register and login user, return auth info"""
+    # Register user
+    register_response = requests.post(
+        f"{api_url}/register",
+        json={"username": test_user["username"], "password": test_user["password"]}
+    )
+
+    if register_response.status_code != 201:
+        raise Exception(f"Registration failed: {register_response.text}")
+
+    user_id = register_response.json().get("id")
+
+    # Login to get token
+    login_response = requests.post(
+        f"{api_url}/login",
+        json={"username": test_user["username"], "password": test_user["password"]}
+    )
+
+    if login_response.status_code != 200:
+        raise Exception(f"Login failed: {login_response.text}")
+
+    token = login_response.json().get("access_token")
+
+    return {
+        "username": test_user["username"],
+        "password": test_user["password"],
+        "token": token,
+        "user_id": user_id
+    }

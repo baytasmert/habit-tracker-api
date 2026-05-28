@@ -12,7 +12,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from slowapi import Limiter
 from slowapi.util import get_remote_address
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from datetime import date, timedelta, datetime
 from typing import List, Optional
 from .config import settings
@@ -466,7 +466,7 @@ def list_habits(
     db: Session = Depends(get_db)
 ):
     logger.info(f"Fetching habits for user: {current_user.id}")
-    query = db.query(Habit).filter(Habit.user_id == current_user.id)
+    query = db.query(Habit).options(joinedload(Habit.logs)).filter(Habit.user_id == current_user.id)
 
     if tag:
         query = query.filter(Habit.tags.ilike(f"%{tag}%"))
@@ -508,7 +508,7 @@ def get_habit(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    habit = db.query(Habit).filter(
+    habit = db.query(Habit).options(joinedload(Habit.logs)).filter(
         Habit.id == habit_id,
         Habit.user_id == current_user.id
     ).first()
@@ -559,7 +559,13 @@ async def track_habit(
         habit_logs_created_total.inc()
 
     db.commit()
-    return TrackResponse(habit_id=habit_id, date=track_date, done=payload.done)
+    return TrackResponse(
+        habit_id=habit_id,
+        date=track_date,
+        done=payload.done,
+        duration=payload.duration,
+        mood_emoji=payload.mood_emoji
+    )
 
 
 @app.get("/habits/{habit_id}/streak", response_model=StreakResponse)
@@ -660,6 +666,10 @@ def update_habit(
         habit.goal_days_per_week = payload["goal_days_per_week"]
     if "category" in payload:
         habit.category = payload["category"]
+    if "tags" in payload:
+        habit.tags = payload["tags"]
+    if "habit_type" in payload:
+        habit.habit_type = payload["habit_type"]
 
     db.commit()
     db.refresh(habit)

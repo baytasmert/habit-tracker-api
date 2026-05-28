@@ -15,6 +15,7 @@ from slowapi.util import get_remote_address
 from sqlalchemy.orm import Session
 from datetime import date, timedelta, datetime
 from typing import List, Optional
+from .config import settings
 from .aws.s3_service import S3Service
 from .models import User, Habit, HabitLog
 from .database import get_db, engine, Base, SessionLocal
@@ -36,13 +37,13 @@ from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExport
 from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
 from opentelemetry.instrumentation.sqlalchemy import SQLAlchemyInstrumentor
 
-traces_exporter = os.getenv("OTEL_TRACES_EXPORTER", "otlp")
-print(f"[OTEL] OTEL_TRACES_EXPORTER={traces_exporter}", flush=True)
+traces_exporter = "otlp" if settings.ENABLE_TRACING else "none"
+print(f"[OTEL] ENABLE_TRACING={settings.ENABLE_TRACING}", flush=True)
 
-if traces_exporter.lower() != "none":
-    jaeger_host = os.getenv("JAEGER_HOST", "localhost")
-    jaeger_port = int(os.getenv("OTEL_EXPORTER_OTLP_ENDPOINT", "localhost:4317").split(":")[-1])
-    print(f"[OTEL] Initializing OTLP gRPC exporter: {jaeger_host}:{jaeger_port}", flush=True)
+if settings.ENABLE_TRACING:
+    jaeger_host = settings.JAEGER_HOST
+    jaeger_port = settings.JAEGER_PORT
+    print(f"[OTEL] Initializing OTLP gRPC exporter: {jaeger_host}:4317", flush=True)
 
     try:
         # Create resource with service name

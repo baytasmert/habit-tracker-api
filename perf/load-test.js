@@ -30,8 +30,9 @@ export default function () {
   sleep(Math.random() * 2 + 1); // 1-3s think time
 
   // 2. Login (get auth token)
+  const timestamp = Math.floor(Date.now() / 1000); // Unix timestamp for uniqueness
   const loginPayload = JSON.stringify({
-    username: `user_${Math.random()}`,
+    username: `user_${timestamp}_${Math.floor(Math.random() * 10000)}`,
     password: 'test123',
   });
 

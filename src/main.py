@@ -13,7 +13,7 @@ from fastapi.templating import Jinja2Templates
 from slowapi import Limiter
 from slowapi.util import get_remote_address
 from sqlalchemy.orm import Session
-from datetime import date, timedelta
+from datetime import date, timedelta, datetime
 from typing import List, Optional
 from .aws.s3_service import S3Service
 from .models import User, Habit, HabitLog

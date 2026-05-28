@@ -91,8 +91,21 @@ import requests
 
 @pytest.fixture
 def api_url():
-    """Return API base URL for E2E tests"""
-    return os.getenv("API_URL", "http://localhost:8001")
+    """Return API base URL for E2E tests
+
+    Inside Docker: localhost:8000 (API runs on 8000 inside container)
+    On host (local): localhost:8001 (docker-compose maps 8001->8000)
+    """
+    api_url = os.getenv("API_URL")
+    if api_url:
+        return api_url
+
+    # Auto-detect: try localhost:8000 first (inside Docker), fall back to 8001 (host)
+    try:
+        requests.get("http://localhost:8000/health", timeout=1)
+        return "http://localhost:8000"
+    except:
+        return "http://localhost:8001"
 
 @pytest.fixture
 def test_user():
@@ -150,36 +163,29 @@ def page():
         browser.close()
 
 
-@pytest.fixture
-def authenticated_page(api_url, test_user):
-    """Playwright page with authenticated session (logged-in user)"""
-    with sync_playwright() as p:
-        browser = p.chromium.launch(headless=True)
-        page = browser.new_page()
+def setup_authenticated_page(page, api_url, test_user):
+    """Helper function to set up an authenticated Playwright page"""
+    # Register user
+    register_response = requests.post(
+        f"{api_url}/register",
+        json={"username": test_user["username"], "password": test_user["password"]}
+    )
 
-        # Register and login user
-        register_response = requests.post(
-            f"{api_url}/register",
-            json={"username": test_user["username"], "password": test_user["password"]}
-        )
+    if register_response.status_code not in [201, 400]:  # 400 if already exists
+        raise Exception(f"Registration failed: {register_response.text}")
 
-        if register_response.status_code != 201:
-            raise Exception(f"Registration failed: {register_response.text}")
+    # Login to get token
+    login_response = requests.post(
+        f"{api_url}/login",
+        json={"username": test_user["username"], "password": test_user["password"]}
+    )
 
-        # Login to get token
-        login_response = requests.post(
-            f"{api_url}/login",
-            json={"username": test_user["username"], "password": test_user["password"]}
-        )
+    if login_response.status_code != 200:
+        raise Exception(f"Login failed: {login_response.text}")
 
-        if login_response.status_code != 200:
-            raise Exception(f"Login failed: {login_response.text}")
+    token = login_response.json().get("access_token")
 
-        token = login_response.json().get("access_token")
-
-        # Set token in localStorage by navigating and executing script
-        page.goto(f"{api_url}/register")  # Just to establish the domain context
-        page.evaluate(f"localStorage.setItem('auth_token', '{token}')")
-
-        yield page
-        browser.close()
+    # Set token in localStorage
+    page.goto(f"{api_url}/register")  # Establish domain context
+    page.evaluate(f"localStorage.setItem('auth_token', '{token}')")
+    return token

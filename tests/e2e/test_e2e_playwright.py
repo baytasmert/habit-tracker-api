@@ -1,6 +1,7 @@
 import pytest
 from playwright.sync_api import Page, expect
 import time
+from tests.conftest import setup_authenticated_page
 
 
 class TestUserRegistrationAndLoginE2E:
@@ -42,115 +43,135 @@ class TestUserRegistrationAndLoginE2E:
 class TestHabitCreationE2E:
     """Scenario 2: E2E habit creation through web UI"""
 
-    def test_create_habit_and_see_in_list(self, page: Page, api_url, authenticated_page: Page):
+    def test_create_habit_and_see_in_list(self, page: Page, api_url, test_user):
         """
         E2E Test: User creates a habit and sees it in the list
-        - Navigate to dashboard (authenticated)
+        - Authenticate user
+        - Navigate to dashboard
         - Click create habit button
         - Fill habit form
         - Submit and verify habit appears in list
         """
-        # Use authenticated page with valid session
-        authenticated_page.goto(f"{api_url}/dashboard")
-        expect(authenticated_page).to_have_title("Dashboard - Habit Tracker")
+        # Setup authenticated session
+        setup_authenticated_page(page, api_url, test_user)
 
-        # Click create habit button
-        authenticated_page.click("button:has-text('Create Habit')")
-        authenticated_page.wait_for_url(f"{api_url}/create-habit", timeout=5000)
+        # Navigate to dashboard
+        page.goto(f"{api_url}/dashboard")
+        expect(page).to_have_title("Dashboard - Habit Tracker")
+
+        # Wait for page to load and click create habit link
+        page.wait_for_selector("a:has-text('Create Habit')", timeout=5000)
+        page.click("a:has-text('Create Habit')")
+        page.wait_for_url(f"{api_url}/create-habit", timeout=5000)
 
         # Fill habit form
         habit_name = f"Morning Run {int(time.time())}"
-        authenticated_page.fill("input[name=name]", habit_name)
-        authenticated_page.fill("input[name=description]", "Run 5km every morning")
-        authenticated_page.select_option("select[name=goal_days_per_week]", "5")
+        page.fill("input[name=name]", habit_name)
+        page.fill("textarea[name=description]", "Run 5km every morning")
+        page.select_option("select[name=goal_days_per_week]", "5")
 
         # Submit form
-        authenticated_page.click("button:has-text('Create Habit')")
+        page.click("button:has-text('Create Habit')")
 
         # Should redirect back to dashboard and habit should be visible
-        authenticated_page.wait_for_url(f"{api_url}/dashboard", timeout=5000)
-        expect(authenticated_page.locator(f"text={habit_name}")).to_be_visible(timeout=5000)
+        page.wait_for_url(f"{api_url}/dashboard", timeout=5000)
+        expect(page.locator(f"text={habit_name}")).to_be_visible(timeout=5000)
 
 
 class TestHabitTrackingE2E:
     """Scenario 3: E2E habit tracking and streak display"""
 
-    def test_track_habit_and_view_streak(self, page: Page, api_url, authenticated_page: Page):
+    def test_track_habit_and_view_streak(self, page: Page, api_url, test_user):
         """
         E2E Test: User tracks a habit and verifies streak counter updates
-        - Create a habit first
+        - Authenticate user
+        - Create a habit
         - Navigate to habit detail page
         - Click track button
         - Mark as done and submit
         - Verify streak counter shows activity
         """
-        # Setup: Create a habit
-        authenticated_page.goto(f"{api_url}/create-habit")
-        habit_name = f"Test Habit {int(time.time())}"
-        authenticated_page.fill("input[name=name]", habit_name)
-        authenticated_page.fill("input[name=description]", "Test tracking")
-        authenticated_page.select_option("select[name=goal_days_per_week]", "7")
-        authenticated_page.click("button:has-text('Create Habit')")
-        authenticated_page.wait_for_url(f"{api_url}/dashboard", timeout=5000)
+        # Setup authenticated session
+        setup_authenticated_page(page, api_url, test_user)
 
-        # Navigate to habit detail page
-        authenticated_page.click(f"a:has-text('View'):near(text={habit_name})")
-        authenticated_page.wait_for_selector("button:has-text('Track')", timeout=5000)
+        # Create a habit
+        page.goto(f"{api_url}/create-habit")
+        habit_name = f"Test Habit {int(time.time())}"
+        page.fill("input[name=name]", habit_name)
+        page.fill("textarea[name=description]", "Test tracking")
+        page.select_option("select[name=goal_days_per_week]", "7")
+        page.click("button:has-text('Create Habit')")
+        page.wait_for_url(f"{api_url}/dashboard", timeout=5000)
+
+        # Navigate to habit detail page (click first View link, should be the one we just created)
+        page.click("a:has-text('View')")
+        # Wait for page to load - the detail page loads habits asynchronously
+        page.wait_for_selector("h1", timeout=10000)
+        page.wait_for_selector("button:has-text('Track')", timeout=5000)
 
         # Click track button to open tracking form
-        authenticated_page.click("button:has-text('Track')")
-        authenticated_page.wait_for_selector("input[name=done]", timeout=5000)
+        page.click("button:has-text('Track')")
+        # Wait for track form to be visible (it starts with display:none)
+        page.locator("#trackForm").wait_for(state="visible", timeout=5000)
 
         # Mark as done
-        authenticated_page.check("input[name=done]")
-        authenticated_page.fill("input[name=duration]", "30")
-        authenticated_page.select_option("select[name=mood]", "5")
+        page.check("input[name=done]")
+        page.fill("input[name=duration]", "30")
+        page.select_option("select[name=mood]", "5")
 
         # Submit tracking form
-        authenticated_page.click("button:has-text('Save')")
+        page.click("button:has-text('Save')")
 
         # Verify streak counter appears
-        expect(authenticated_page.locator("text=Streak")).to_be_visible(timeout=5000)
+        expect(page.locator("text=Streak")).to_be_visible(timeout=5000)
 
 
 class TestHabitEditE2E:
     """Scenario 4: E2E habit editing"""
 
-    def test_edit_habit_details(self, page: Page, api_url, authenticated_page: Page):
+    def test_edit_habit_details(self, page: Page, api_url, test_user):
         """
         E2E Test: User edits habit details
+        - Authenticate user
         - Create a habit
         - Navigate to detail page
         - Click edit button
         - Change name and goal days
         - Verify changes are saved
         """
-        # Setup: Create a habit
-        authenticated_page.goto(f"{api_url}/create-habit")
-        original_name = f"Original {int(time.time())}"
-        authenticated_page.fill("input[name=name]", original_name)
-        authenticated_page.fill("input[name=description]", "Original description")
-        authenticated_page.select_option("select[name=goal_days_per_week]", "3")
-        authenticated_page.click("button:has-text('Create Habit')")
-        authenticated_page.wait_for_url(f"{api_url}/dashboard", timeout=5000)
+        # Setup authenticated session
+        setup_authenticated_page(page, api_url, test_user)
 
-        # Navigate to habit detail and click edit
-        authenticated_page.click(f"a:has-text('View'):near(text={original_name})")
-        authenticated_page.wait_for_selector("button:has-text('Edit')", timeout=5000)
-        authenticated_page.click("button:has-text('Edit')")
+        # Create a habit
+        page.goto(f"{api_url}/create-habit")
+        original_name = f"Original {int(time.time())}"
+        page.fill("input[name=name]", original_name)
+        page.fill("textarea[name=description]", "Original description")
+        page.select_option("select[name=goal_days_per_week]", "3")
+        page.click("button:has-text('Create Habit')")
+        page.wait_for_url(f"{api_url}/dashboard", timeout=5000)
+
+        # Navigate to habit detail and click edit (click first View link)
+        page.click("a:has-text('View')")
+        # Wait for page to load - the detail page loads habits asynchronously
+        page.wait_for_selector("h1", timeout=10000)
+        page.wait_for_selector("button:has-text('Edit')", timeout=5000)
+        page.click("button:has-text('Edit')")
 
         # Fill edit form with new values
-        authenticated_page.wait_for_selector("input[name=name]", timeout=5000)
-        new_name = f"Updated {int(time.time())}"
-        authenticated_page.clear("input[name=name]")
-        authenticated_page.fill("input[name=name]", new_name)
-        authenticated_page.select_option("select[name=goal_days_per_week]", "5")
+        # Wait for edit form to be visible (it starts with display:none)
+        page.locator("#editForm").wait_for(state="visible", timeout=5000)
 
-        # Submit edit form
-        authenticated_page.click("button:has-text('Save')")
+        new_name = f"Updated {int(time.time())}"
+        page.evaluate("() => document.querySelector('input[name=name]').value = ''")
+        page.fill("input[name=name]", new_name)
+        page.select_option("select[name=goal_days_per_week]", "5")
+
+        # Submit edit form - using locator to find the visible save button in edit form
+        page.locator("#editForm button:has-text('Save')").click()
 
         # Verify new name appears on page
-        expect(authenticated_page.locator(f"h1:has-text('{new_name}'")).to_be_visible(timeout=5000)
+        expect(page.locator(f"h1:has-text('{new_name}'")).to_be_visible(timeout=5000)
 
 
 class TestErrorHandlingE2E:

@@ -1,8 +1,24 @@
 import pytest
 from playwright.sync_api import sync_playwright, Page, Browser, BrowserContext
 import time
+import os
+import requests
 
-API_URL = "http://localhost:8001"
+
+# Auto-detect API URL: localhost:8000 inside Docker, localhost:8001 on host
+def get_api_url():
+    api_url = os.getenv("API_URL")
+    if api_url:
+        return api_url
+    # Try localhost:8000 first (inside Docker), fall back to 8001 (host)
+    try:
+        requests.get("http://localhost:8000/health", timeout=1)
+        return "http://localhost:8000"
+    except:
+        return "http://localhost:8001"
+
+
+API_URL = get_api_url()
 
 
 @pytest.fixture(scope="session")

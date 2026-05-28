@@ -4,7 +4,7 @@
 
 {% block content %}
 <div class="detail-container">
-    <a href="/dashboard" class="btn btn-secondary">← Back to Dashboard</a>
+    <a href="/my-habits" class="btn btn-secondary">← Back to Habits</a>
 
     <div class="detail-card" id="habitDetail">
         <p class="loading">Loading habit...</p>
@@ -17,7 +17,6 @@
 const habitId = new URLSearchParams(window.location.search).get('id');
 
 async function loadHabitDetail() {
-    const token = localStorage.getItem('auth_token');
     if (!token) {
         window.location.href = '/login';
         return;
@@ -171,7 +170,6 @@ function editHabit() {
 async function saveTracking(e) {
     e.preventDefault();
 
-    const token = localStorage.getItem('auth_token');
     const done = document.getElementById('done').checked;
     const duration = parseInt(document.getElementById('duration').value) || 0;
     const mood = document.getElementById('mood').value ? parseInt(document.getElementById('mood').value) : null;
@@ -204,7 +202,6 @@ async function saveTracking(e) {
 async function saveEdit(e) {
     e.preventDefault();
 
-    const token = localStorage.getItem('auth_token');
     const name = document.getElementById('edit_name').value;
     const description = document.getElementById('edit_description').value;
     const goal_days_per_week = parseInt(document.getElementById('edit_goal').value);
@@ -239,7 +236,6 @@ async function deleteHabit() {
         return;
     }
 
-    const token = localStorage.getItem('auth_token');
     try {
         const response = await fetch(`/habits/${habitId}`, {
             method: 'DELETE',
@@ -249,7 +245,7 @@ async function deleteHabit() {
         });
 
         if (response.ok) {
-            window.location.href = '/dashboard';
+            window.location.href = '/my-habits';
         } else {
             alert('Failed to delete habit');
         }

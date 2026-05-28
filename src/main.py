@@ -290,6 +290,15 @@ async def admin_panel(request: Request):
     return templates.TemplateResponse("admin.html", {"request": request})
 
 
+@app.get("/profile", response_class=templates.TemplateResponse.__class__)
+async def profile_page(request: Request, current_user: User = Depends(get_current_user)):
+    """User profile page - view and change avatar"""
+    return templates.TemplateResponse("profile.html", {
+        "request": request,
+        "user": current_user
+    })
+
+
 def compute_streak(history: dict) -> tuple[int, Optional[date]]:
     done_dates = sorted([d for d, done in history.items() if done])
     if not done_dates:

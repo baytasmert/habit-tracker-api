@@ -43,7 +43,6 @@
 document.getElementById('createHabitForm').addEventListener('submit', async (e) => {
     e.preventDefault();
 
-    const token = localStorage.getItem('auth_token');
     if (!token) {
         window.location.href = '/login';
         return;
@@ -68,7 +67,7 @@ document.getElementById('createHabitForm').addEventListener('submit', async (e) 
         });
 
         if (response.ok) {
-            window.location.href = '/dashboard';
+            window.location.href = '/my-habits';
         } else {
             alert('Failed to create habit');
         }

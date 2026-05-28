@@ -31,8 +31,11 @@
 
             <div class="form-group">
                 <label for="avatar">Profile Photo (Optional):</label>
-                <input type="file" id="avatar" name="avatar" accept="image/*">
-                <small>Upload a profile photo (optional)</small>
+                <div class="file-input-group">
+                    <input type="file" id="avatar" name="avatar" accept="image/*">
+                    <button type="button" id="clearAvatar" class="btn btn-small">Clear</button>
+                </div>
+                <small id="avatarFileName"></small>
             </div>
 
             <button type="submit" class="btn btn-primary">Register</button>
@@ -47,6 +50,20 @@
 
 {% block scripts %}
 <script>
+// Handle avatar file selection
+document.getElementById('avatar').addEventListener('change', () => {
+    const file = document.getElementById('avatar').files[0];
+    if (file) {
+        document.getElementById('avatarFileName').textContent = 'Selected: ' + file.name;
+    }
+});
+
+// Handle clear avatar button
+document.getElementById('clearAvatar').addEventListener('click', () => {
+    document.getElementById('avatar').value = '';
+    document.getElementById('avatarFileName').textContent = '';
+});
+
 document.getElementById('registerForm').addEventListener('submit', async (e) => {
     e.preventDefault();
 

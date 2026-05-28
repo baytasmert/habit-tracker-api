@@ -125,6 +125,18 @@ body {
     color: white;
 }
 
+.btn-small {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.8rem;
+    margin-left: 0.5rem;
+}
+
+.file-input-group {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
 .btn-primary:hover {
     background-color: #0066a1;
 }

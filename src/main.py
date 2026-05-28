@@ -720,23 +720,27 @@ def login(payload: LoginRequest, db: Session = Depends(get_db)):
 
 @app.post("/register", response_model=UserResponse, status_code=201)
 def register(payload: LoginRequest, db: Session = Depends(get_db)):
-    logger.info(f"Registration attempt for user: {payload.username}")
-    existing = db.query(User).filter(User.username == payload.username).first()
-    if existing:
-        raise HTTPException(status_code=400, detail="Username already exists")
+    try:
+        logger.info(f"Registration attempt for user: {payload.username}")
+        existing = db.query(User).filter(User.username == payload.username).first()
+        if existing:
+            raise HTTPException(status_code=400, detail="Username already exists")
 
-    hashed_password = hash_password(payload.password)
-    new_user = User(
-        username=payload.username,
-        email=f"{payload.username}@example.com",
-        hashed_password=hashed_password
-    )
-    db.add(new_user)
-    db.commit()
-    db.refresh(new_user)
+        hashed_password = hash_password(payload.password)
+        new_user = User(
+            username=payload.username,
+            email=getattr(payload, 'email', f"{payload.username}@example.com"),
+            hashed_password=hashed_password
+        )
+        db.add(new_user)
+        db.commit()
+        db.refresh(new_user)
 
-    logger.info(f"User registered successfully: {payload.username}")
-    return new_user
+        logger.info(f"User registered successfully: {payload.username}")
+        return new_user
+    except Exception as e:
+        logger.error(f"Registration error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Registration error: {str(e)}")
 
 
 @app.post("/users", status_code=201)

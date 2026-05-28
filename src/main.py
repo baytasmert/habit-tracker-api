@@ -278,8 +278,10 @@ async def edit_habit_page(request: Request):
 
 @app.get("/logout")
 async def logout_page():
-    """Logout and redirect to login"""
-    return RedirectResponse(url="/login")
+    """Logout, clear cookie and redirect to login"""
+    response = RedirectResponse(url="/login", status_code=302)
+    response.delete_cookie(key="auth_token")
+    return response
 
 
 @app.get("/admin", response_class=templates.TemplateResponse.__class__)

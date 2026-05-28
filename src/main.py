@@ -17,7 +17,7 @@ from datetime import date, timedelta, datetime
 from typing import List, Optional
 from .aws.s3_service import S3Service
 from .models import User, Habit, HabitLog
-from .database import get_db, engine, Base
+from .database import get_db, engine, Base, SessionLocal
 from .schemas import (
     HabitCreate, HabitResponse, TrackRequest,
     TrackResponse, StreakResponse, LoginRequest, LoginResponse, UserResponse
@@ -270,6 +270,27 @@ def startup():
     # Fresh start: drop all tables and recreate (safe for dev/test)
     Base.metadata.drop_all(bind=engine)
     Base.metadata.create_all(bind=engine)
+
+    # Create default admin user
+    from .auth import hash_password
+    db = SessionLocal()
+    try:
+        admin_exists = db.query(User).filter(User.username == "admin").first()
+        if not admin_exists:
+            admin_user = User(
+                username="admin",
+                email="admin@habittracker.local",
+                hashed_password=hash_password("admin123"),
+                is_admin=True
+            )
+            db.add(admin_user)
+            db.commit()
+            logger.info("Default admin user created: username=admin, password=admin123")
+    except Exception as e:
+        logger.error(f"Error creating admin user: {e}")
+        db.rollback()
+    finally:
+        db.close()
 
 
 # Frontend Routes (HTML/Template serving)

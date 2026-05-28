@@ -10,19 +10,19 @@ class TestTemplateRoutes:
 
     def test_home_page_requires_auth(self, client):
         """Home page should redirect to login without token"""
-        response = client.get("/home")
+        response = client.get("/home", follow_redirects=False)
         assert response.status_code == 302
         assert "/login" in response.headers.get("location", "")
 
     def test_create_habit_page_requires_auth(self, client):
         """Create habit page should require authentication"""
-        response = client.get("/create-habit")
+        response = client.get("/create-habit", follow_redirects=False)
         assert response.status_code == 302
         assert "/login" in response.headers.get("location", "")
 
     def test_my_habits_page_requires_auth(self, client):
         """Habits list page should require authentication"""
-        response = client.get("/my-habits")
+        response = client.get("/my-habits", follow_redirects=False)
         assert response.status_code == 302
 
     def test_tips_page_accessible_without_auth(self, client):
@@ -419,10 +419,8 @@ class TestAuthentication:
         response = client.get("/habits")
         assert response.status_code == 401 or response.status_code == 302
 
-    def test_access_other_user_habit(self, client, db_session):
-        """User should only see their own habits"""
-        # This would require creating 2 different users
-        # For now, test that unauthorized returns 401
+    def test_access_other_user_habit(self, client):
+        """User should only see their own habits without auth"""
         response = client.get("/habits")
         assert response.status_code != 200
 

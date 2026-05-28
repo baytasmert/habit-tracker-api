@@ -1,6 +1,6 @@
 from pydantic import BaseModel, ConfigDict
 from datetime import date
-from typing import Optional
+from typing import Optional, List
 
 
 class HabitCreate(BaseModel):
@@ -12,6 +12,17 @@ class HabitCreate(BaseModel):
     goal_count: Optional[int] = None
     target_duration: Optional[int] = None
     tags: Optional[str] = None
+
+
+class HabitLogResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: Optional[int] = None
+    log_date: date
+    done: bool
+    duration: Optional[int]
+    mood_emoji: Optional[str]
+    notes: Optional[str]
 
 
 class HabitResponse(BaseModel):
@@ -30,6 +41,7 @@ class HabitResponse(BaseModel):
     image_url: Optional[str]
     created_at: date
     tracked_days: int
+    logs: Optional[List[HabitLogResponse]] = None
 
 
 class TrackRequest(BaseModel):
@@ -47,6 +59,8 @@ class TrackResponse(BaseModel):
     habit_id: int
     date: date
     done: bool
+    duration: Optional[int] = None
+    mood_emoji: Optional[str] = None
 
 
 class StreakResponse(BaseModel):

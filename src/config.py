@@ -7,7 +7,6 @@ from pydantic_settings import BaseSettings
 from pydantic import field_validator
 from functools import lru_cache
 import os
-from pathlib import Path
 
 # Determine which .env file to load based on APP_ENV
 app_env = os.getenv("APP_ENV", "local")

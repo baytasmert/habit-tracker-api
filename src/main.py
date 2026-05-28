@@ -7,7 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from fastapi.exceptions import RequestValidationError
-from fastapi.responses import JSONResponse, RedirectResponse, FileResponse, StreamingResponse, Response
+from fastapi.responses import JSONResponse, RedirectResponse, FileResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from slowapi import Limiter
@@ -21,7 +21,7 @@ from .models import User, Habit, HabitLog
 from .database import get_db, engine, Base, SessionLocal
 from .schemas import (
     HabitCreate, HabitResponse, TrackRequest,
-    TrackResponse, StreakResponse, LoginRequest, LoginResponse, UserResponse
+    TrackResponse, StreakResponse, LoginRequest, UserResponse
 )
 from .auth import (
     hash_password, verify_password, create_access_token, get_current_user
@@ -320,7 +320,7 @@ def index(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})
 
 
-@app.get("/home", response_class=templates.TemplateResponse.__class__)
+@app.get("/home")
 async def home(request: Request):
     """Authenticated home page with profile and stats"""
     token = request.cookies.get("auth_token")
@@ -329,7 +329,7 @@ async def home(request: Request):
     return templates.TemplateResponse("home.html", {"request": request})
 
 
-@app.get("/my-habits", response_class=templates.TemplateResponse.__class__)
+@app.get("/my-habits")
 async def habits_page(request: Request):
     """Habits management page"""
     token = request.cookies.get("auth_token")
@@ -386,7 +386,7 @@ async def get_avatar(user_id: int, db: Session = Depends(get_db)):
     return FileResponse(default_avatar_path, media_type="image/svg+xml")
 
 
-@app.get("/create-habit", response_class=templates.TemplateResponse.__class__)
+@app.get("/create-habit")
 async def create_habit_page(request: Request):
     """Create habit page (requires auth)"""
     token = request.cookies.get("auth_token")

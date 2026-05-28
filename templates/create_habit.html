@@ -128,8 +128,13 @@
 
 {% block scripts %}
 <script>
-// Utility to get auth token
-function getToken() {
+// Utility to get auth token from localStorage or cookies
+function getAuthToken() {
+    // Try localStorage first (preferred)
+    let token = localStorage.getItem('auth_token');
+    if (token) return token;
+
+    // Fall back to cookies
     const cookies = document.cookie.split(';');
     for (let cookie of cookies) {
         const [name, value] = cookie.trim().split('=');
@@ -138,7 +143,7 @@ function getToken() {
     return null;
 }
 
-const authToken = getToken();
+const authToken = getAuthToken();
 
 // Handle habit_type radio buttons - show/hide conditional fields
 document.querySelectorAll('input[name="habit_type"]').forEach(radio => {

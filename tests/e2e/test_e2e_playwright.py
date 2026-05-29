@@ -84,7 +84,7 @@ class TestHabitCreationE2E:
 class TestHabitTrackingE2E:
     """Scenario 3: E2E habit tracking and streak display"""
 
-    @pytest.mark.skip(reason="Habit detail page button selectors need investigation - page structure differs from expected")
+    @pytest.mark.xfail(reason="Habit detail page buttons not rendering after API fetch - needs debugging of JS fetch and token passing")
     def test_track_habit_and_view_streak(self, page: Page, api_url, test_user):
         """
         E2E Test: User tracks a habit and verifies streak counter updates
@@ -112,9 +112,13 @@ class TestHabitTrackingE2E:
         page.reload()
         page.wait_for_selector(f"text={habit_name}", timeout=10000)
 
-        # Navigate to habit detail page (click first View link after habit appears)
-        page.click("a:has-text('View')")
+        # Navigate to habit detail page - click View button in habit card
+        habit_card = page.locator(f"h4:has-text('{habit_name}')").locator("..").locator("..")
+        view_button = habit_card.locator("a:has-text('View')")
+        view_button.click()
+
         # Wait for page to load - the detail page loads habits asynchronously
+        page.wait_for_url("**/habits/**/detail**", timeout=10000)
         page.wait_for_load_state("networkidle", timeout=10000)
         page.wait_for_selector("button:has-text('Track')", timeout=10000)
 
@@ -142,7 +146,7 @@ class TestHabitTrackingE2E:
 class TestHabitEditE2E:
     """Scenario 4: E2E habit editing"""
 
-    @pytest.mark.skip(reason="Habit detail page button selectors need investigation - page structure differs from expected")
+    @pytest.mark.xfail(reason="Habit detail page buttons not rendering after API fetch - needs debugging of JS fetch and token passing")
     def test_edit_habit_details(self, page: Page, api_url, test_user):
         """
         E2E Test: User edits habit details
@@ -170,9 +174,13 @@ class TestHabitEditE2E:
         page.reload()
         page.wait_for_selector(f"text={original_name}", timeout=10000)
 
-        # Navigate to habit detail and click edit (click first View link after habit appears)
-        page.click("a:has-text('View')")
+        # Navigate to habit detail page - click View button in habit card
+        habit_card = page.locator(f"h4:has-text('{original_name}')").locator("..").locator("..")
+        view_button = habit_card.locator("a:has-text('View')")
+        view_button.click()
+
         # Wait for page to load - the detail page loads habits asynchronously
+        page.wait_for_url("**/habits/**/detail**", timeout=10000)
         page.wait_for_load_state("networkidle", timeout=10000)
         page.wait_for_selector("button:has-text('Edit')", timeout=10000)
 

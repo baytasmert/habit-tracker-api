@@ -226,8 +226,8 @@ async function loadHabits() {
                         </div>
                         <p class="habit-card-last-tracked">Günlük takip: ${lastTracked}</p>
                         <div class="habit-card-actions">
-                            <button onclick="openTrackingModal(${habit.id}, '${habit.name.replace(/'/g, "\\'")}', ${habit.is_negative})" class="btn btn-small btn-primary" style="border: none; cursor: pointer;">Takip Et</button>
-                            <a href="/edit-habit?id=${habit.id}" class="btn btn-small btn-secondary">Düzenle</a>
+                            <a href="/habits/${habit.id}/detail" class="btn btn-small btn-primary">View</a>
+                            <button onclick="openTrackingModal(${habit.id}, '${habit.name.replace(/'/g, "\\'")}', ${habit.is_negative})" class="btn btn-small btn-secondary" style="border: none; cursor: pointer;">Takip Et</button>
                         </div>
                     </div>
                 </div>

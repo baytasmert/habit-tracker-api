@@ -14,7 +14,8 @@
 
 {% block scripts %}
 <script>
-const habitId = new URLSearchParams(window.location.search).get('id');
+const token = localStorage.getItem('auth_token');
+const habitId = {{ habit_id }};
 
 async function loadHabitDetail() {
     if (!token) {

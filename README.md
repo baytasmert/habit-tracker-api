@@ -1,413 +1,335 @@
 # Habit Tracker API
 
-Bulut Mimarilerinde Test Mühendisliği - University Project
+**Marmara Üniversitesi — Bulut Mimarilerinde Test Mühendisliği — Dönem Projesi**
 
-A full-stack habit tracking application with comprehensive testing (unit, integration, E2E), CI/CD automation, containerization, and Kubernetes deployment.
-
-## Features
-
-- **User Management**: Registration, authentication (JWT), password hashing (bcrypt)
-- **Habit Management**: CRUD operations, habit tracking, streak calculation
-- **Web UI**: Responsive HTML/CSS/JavaScript frontend (no external frameworks)
-- **Testing**: 55+ tests (unit, integration, E2E with Playwright)
-- **CI/CD**: GitHub Actions pipeline with automated testing and deployment
-- **Containerization**: Docker Compose for local development, Docker for production
-- **Kubernetes**: Deployment manifests with readiness/liveness probes
-- **Monitoring**: Prometheus metrics, Grafana dashboards
-- **Distributed Tracing**: OpenTelemetry + Jaeger
-- **Performance Testing**: k6 load testing with real user simulations
-
-## Architecture
-
-```
-Frontend (HTML/CSS/JS)
-    ↓
-FastAPI Application (Python)
-    ↓ (SQLAlchemy ORM)
-PostgreSQL Database
-    ↓
-External: S3 (LocalStack in dev), Prometheus, Jaeger
-```
-
-See [ARCHITECTURE.md](docs/ARCHITECTURE.md) for detailed architecture documentation.
-
-## Quick Start
-
-### Prerequisites
-- Docker & Docker Compose
-- Python 3.11+
-- Git
-
-### Local Development with Docker Compose
-
-1. **Clone and setup**:
-```bash
-git clone <repo>
-cd habit_tracker_api-1
-```
-
-2. **Start all services** (API, PostgreSQL, Grafana, Prometheus, Jaeger):
-```bash
-docker-compose up -d
-```
-
-3. **Access the application**:
-- **Web UI**: http://localhost:8001
-- **API Docs**: http://localhost:8001/docs (Swagger)
-- **Grafana**: http://localhost:3000 (admin/admin)
-- **Prometheus**: http://localhost:9090
-- **Jaeger**: http://localhost:16686
-
-4. **View logs**:
-```bash
-docker-compose logs -f api
-```
-
-5. **Stop services**:
-```bash
-docker-compose down
-```
-
-## Testing
-
-### Unit & Integration Tests (56 tests, ~78% coverage)
-
-```bash
-# Run all tests
-pytest tests/ -v
-
-# Run specific test types
-pytest tests/test_unit_auth.py -v              # Unit tests
-pytest tests/integration/ -v                    # Integration tests
-pytest tests/testcontainers/ -v                # Testcontainers
-
-# With coverage report
-pytest tests/ --cov=src --cov-report=html
-```
-
-### E2E Tests with Playwright (6 scenarios)
-
-```bash
-# Requires docker-compose running
-docker-compose up -d
-
-# Run E2E tests
-pytest tests/e2e/ -v
-
-# Run in headed mode (see browser)
-pytest tests/e2e/ -v --headed
-
-# Run specific scenario
-pytest tests/e2e/test_e2e_playwright.py::TestUserRegistrationE2E -v
-```
-
-**E2E Test Scenarios**:
-1. User registration and login via UI
-2. Create habit and view in list
-3. Track habit and view streak
-4. Edit habit details
-5. Delete habit and verify 404
-6. Error handling (unauthorized access, invalid login)
-
-### Performance Testing with k6
-
-```bash
-# Install k6
-brew install k6  # macOS
-# or download from https://k6.io/docs/getting-started/installation/
-
-# Requires API running (docker-compose up -d)
-
-# Smoke test (1 VU, 30s)
-k6 run perf/smoke-test.js
-
-# Load test (50 VUs, 5min)
-k6 run perf/load-test.js
-
-# Custom parameters
-k6 run -e API_URL=http://localhost:8001 -e DURATION=2m perf/load-test.js
-```
-
-## API Endpoints
-
-| Method | Endpoint | Auth | Description |
-|--------|----------|------|-------------|
-| POST | /register | No | Register new user |
-| POST | /login | No | Login & get JWT token |
-| GET | /health | No | Health check |
-| GET | /metrics | No | Prometheus metrics |
-| GET | /habits | Yes | List user's habits |
-| POST | /habits | Yes | Create habit |
-| GET | /habits/{id} | Yes | Get habit details |
-| PATCH | /habits/{id} | Yes | Update habit |
-| DELETE | /habits/{id} | Yes | Delete habit |
-| POST | /habits/{id}/track | Yes | Track habit completion |
-| GET | /habits/{id}/streak | Yes | Get habit streak |
-| POST | /users/{id}/avatar | Yes | Upload avatar to S3 |
-| GET | /users/{id}/avatar | Yes | Download avatar from S3 |
-
-## Kubernetes Deployment
-
-### Local Testing with Kind
-
-```bash
-# Create Kind cluster
-kind create cluster --name habit-tracker
-
-# Load Docker image into Kind
-docker build -t habit-tracker-api:latest .
-kind load docker-image habit-tracker-api:latest --name habit-tracker
-
-# Deploy to Kind
-kubectl apply -f k8s/
-
-# Check deployment
-kubectl get deployments
-kubectl get pods
-kubectl logs -f deployment/habit-tracker-api
-
-# Port forward to access
-kubectl port-forward svc/habit-tracker-api 8000:8000
-
-# Cleanup
-kind delete cluster --name habit-tracker
-```
-
-### Kubernetes Manifests
-
-- [deployment.yaml](k8s/deployment.yaml) - API deployment with health probes
-- [service.yaml](k8s/service.yaml) - ClusterIP service
-- [postgres.yaml](k8s/postgres.yaml) - PostgreSQL StatefulSet with persistence
-- [configmap.yaml](k8s/configmap.yaml) - Environment configuration
-
-Features:
-- Resource limits: 512Mi memory, 500m CPU
-- Readiness probe: `pg_isready` every 5s
-- Liveness probe: `pg_isready` every 10s
-- Image pull policy: IfNotPresent (for Kind)
-
-## CI/CD Pipeline
-
-GitHub Actions workflow (`.github/workflows/ci-cd.yml`):
-
-1. **Lint** - flake8 code quality checks
-2. **Test** - Unit & integration tests (pytest)
-3. **Build** - Docker image build and push
-4. **Deploy & E2E** - Deploy to Kind, run Playwright E2E tests
-5. **Smoke Test** - API health and basic functionality
-6. **Load Test** - k6 performance test (50 VUs, 5min)
-
-All jobs complete within timeout constraints (15 min for E2E, 10 min for load test).
-
-## Project Structure
-
-```
-.
-├── src/
-│   ├── main.py              # FastAPI app, routes
-│   ├── models.py            # SQLAlchemy ORM models
-│   ├── database.py          # Database configuration
-│   ├── auth.py              # JWT & password hashing
-│   └── s3.py                # S3/LocalStack avatar uploads
-├── templates/               # Jinja2 HTML templates
-│   ├── base.html
-│   ├── index.html           # Welcome/landing page
-│   ├── register.html
-│   ├── login.html
-│   ├── dashboard.html       # Habit list
-│   ├── create_habit.html
-│   └── habit_detail.html
-├── static/                  # CSS & JavaScript
-│   ├── style.css
-│   └── app.js
-├── tests/
-│   ├── conftest.py          # Pytest fixtures
-│   ├── test_unit_auth.py    # Unit tests
-│   ├── factories.py         # Factory Boy definitions
-│   ├── integration/         # Integration tests
-│   ├── e2e/                 # Playwright E2E tests
-│   │   ├── conftest.py
-│   │   ├── test_e2e.py      # API integration tests
-│   │   └── test_e2e_playwright.py  # Browser automation
-│   └── testcontainers/      # Isolated DB tests
-├── perf/                    # Performance tests
-│   ├── smoke-test.js
-│   └── load-test.js
-├── k8s/                     # Kubernetes manifests
-│   ├── deployment.yaml
-│   ├── service.yaml
-│   ├── postgres.yaml
-│   └── configmap.yaml
-├── .github/workflows/       # CI/CD pipeline
-├── docker-compose.yml       # Local dev environment
-├── Dockerfile
-└── requirements.txt
-```
-
-## Technology Stack
-
-| Layer | Technology |
-|-------|-----------|
-| **Frontend** | HTML5, CSS3, JavaScript (vanilla) |
-| **Backend** | FastAPI (Python 3.11) |
-| **Database** | PostgreSQL 16 |
-| **Testing** | pytest, Factory Boy, Playwright, k6 |
-| **CI/CD** | GitHub Actions |
-| **Containerization** | Docker, Docker Compose |
-| **Orchestration** | Kubernetes |
-| **Monitoring** | Prometheus, Grafana, OpenTelemetry, Jaeger |
-| **Cloud Services** | AWS S3 (LocalStack in dev) |
-
-## Environment Variables
-
-See `.env.example` for all configuration options:
-
-```bash
-# Core
-DATABASE_URL=postgresql://user:password@db:5432/habits
-API_PORT=8000
-DEBUG=False
-
-# Auth
-SECRET_KEY=your-secret-key-change-in-production
-ACCESS_TOKEN_EXPIRE_MINUTES=30
-
-# S3
-AWS_ACCESS_KEY_ID=test
-AWS_SECRET_ACCESS_KEY=test
-S3_BUCKET=habits
-S3_ENDPOINT_URL=http://localstack:4566  # or AWS S3 in production
-
-# Monitoring
-OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4317
-
-# Testing
-API_URL=http://localhost:8001
-```
-
-## Development Workflow
-
-```bash
-# 1. Create feature branch
-git checkout -b feature/my-feature
-
-# 2. Make changes
-# Edit src/, templates/, static/, tests/
-
-# 3. Run tests locally
-docker-compose up -d
-pytest tests/ -v
-pytest tests/e2e/ -v
-
-# 4. Run linting
-flake8 src/ tests/
-
-# 5. Commit and push
-git add .
-git commit -m "feat: add my feature"
-git push origin feature/my-feature
-
-# 6. Create PR
-# GitHub Actions will automatically:
-# - Run linting
-# - Run all tests
-# - Build Docker image
-# - Deploy to Kind cluster
-# - Run E2E and load tests
-```
-
-## Performance Baseline
-
-From k6 load testing (50 VUs, 5 minutes):
-
-- **p95 Latency**: ~150ms
-- **p99 Latency**: ~300ms
-- **Requests/sec**: ~80-120 RPS
-- **Error Rate**: <5%
-- **Success Rate**: >95%
-
-## Troubleshooting
-
-### Docker Compose Issues
-
-```bash
-# View all logs
-docker-compose logs -f
-
-# Restart API service
-docker-compose restart api
-
-# Rebuild images
-docker-compose down
-docker-compose build --no-cache
-docker-compose up -d
-```
-
-### Database Connection Error
-
-```bash
-# Check PostgreSQL is running
-docker-compose ps
-
-# View database logs
-docker-compose logs db
-
-# Reset database
-docker-compose down -v
-docker-compose up -d
-```
-
-### E2E Tests Failing
-
-```bash
-# Ensure API is responding
-curl http://localhost:8001/health
-
-# Run tests with verbose output
-pytest tests/e2e/ -v -s
-
-# Run in headed mode to see browser
-pytest tests/e2e/test_e2e_playwright.py::TestUserRegistrationE2E -v --headed
-```
-
-## Contributing
-
-1. Ensure code passes flake8: `flake8 src/ tests/`
-2. Write tests for new features
-3. Maintain test coverage >70%: `pytest --cov=src`
-4. All GitHub Actions jobs must pass
-
-## License
-
-This is a university course assignment for "Bulut Mimarilerinde Test Mühendisliği"
-
-## Authors
-
-- **Student**: Kulo (mertbaytas@gmail.com)
-- **Course**: Cloud Architectures & Test Engineering
-- **University**: [Institution Name]
-- **Date**: May 2026
-
-## Course Requirements Fulfillment
-
-This project fulfills the following course requirements:
-
-| Requirement | Status | Details |
-|-------------|--------|---------|
-| API Development | ✅ | 8 endpoints, SQLAlchemy ORM, PostgreSQL |
-| Unit Testing | ✅ | 12 unit tests (auth, password hashing, JWT) |
-| Integration Testing | ✅ | 28 integration tests (fixtures, factories) |
-| E2E Testing | ✅ | 6 Playwright scenarios covering full workflows |
-| Code Quality | ✅ | 100% flake8 compliant |
-| Test Coverage | ✅ | 78.54% code coverage |
-| Docker | ✅ | docker-compose with 5+ services |
-| Kubernetes | ✅ | Deployments, services, probes, ConfigMap |
-| CI/CD | ✅ | GitHub Actions with 6 jobs |
-| Performance Testing | ✅ | k6 smoke and load tests |
-| Monitoring | ✅ | Prometheus, Grafana, Jaeger |
-| Frontend | ✅ | HTML/CSS/JS (no frameworks) |
-| Web UI | ✅ | 6 pages: register, login, dashboard, create, detail |
+Günlük alışkanlık takibi, streak hesaplama ve kullanıcı istatistikleri sunan bir REST API. Proje amacı "karmaşık uygulama yazmak" değil, "basit uygulama için endüstri standardında test ve dağıtım altyapısı kurmak"tır.
 
 ---
 
-**Questions?** See [ARCHITECTURE.md](docs/ARCHITECTURE.md) for deeper technical details, or [SETUP.md](docs/SETUP.md) for step-by-step configuration.
+## Özellikler
+
+- **REST API**: FastAPI, 12+ endpoint, JWT auth, bcrypt, rate limiting
+- **Veritabanı**: PostgreSQL 16, SQLAlchemy ORM, streak hesaplama
+- **Web UI**: NGINX + Jinja2 template — Playwright E2E testleri için
+- **AWS S3**: LocalStack üzerinden avatar upload/download
+- **Testing**: 92 test — unit, integration, Testcontainers, E2E, Postman/Newman
+- **CI/CD**: GitHub Actions 6 job — lint → test → build → deploy → smoke → load
+- **Kubernetes**: Kind cluster deploy, Deployment + Service + ConfigMap + Ingress
+- **Monitoring**: Prometheus metrics, Grafana 4 panel dashboard
+- **Tracing**: OpenTelemetry + Jaeger (OTLP gRPC) — **+5 bonus**
+- **ArgoCD**: GitOps manifests — **+5 bonus**
+- **Performance**: k6 smoke (5VU/30s) + load test (50VU/60s), p95=285ms
+
+---
+
+## Mimari
+
+```
+Browser
+  │
+  ├── :8001 ──→ NGINX (frontend proxy / static files)
+  │                  │
+  └── :8000 ──→ FastAPI (REST API + Jinja2 templates)
+                    │
+          ┌─────────┼──────────────────┐
+          │         │                  │
+    PostgreSQL  LocalStack S3      Jaeger:4317
+      :5432     :4566 (avatars)   (OTLP tracing)
+          │
+    Prometheus:9090 → Grafana:3000
+```
+
+Tam diyagram: [docs/architecture.png](docs/architecture.png)
+
+---
+
+## Hızlı Başlangıç
+
+### Gereksinimler
+- Docker & Docker Compose
+- Python 3.11+
+
+### Docker Compose ile Başlatma
+
+```bash
+git clone https://github.com/baytasmert/habit-tracker-api.git
+cd habit-tracker-api
+cp .env.docker .env
+docker-compose up -d
+```
+
+| Servis | URL |
+|--------|-----|
+| Web UI | http://localhost:8001 |
+| API | http://localhost:8000 |
+| API Docs | http://localhost:8000/docs |
+| Grafana | http://localhost:3000 (admin/admin) |
+| Prometheus | http://localhost:9090 |
+| Jaeger UI | http://localhost:16686 |
+
+---
+
+## API Endpoint'leri
+
+| Method | Endpoint | Auth | Açıklama |
+|--------|----------|------|----------|
+| POST | /register | — | Kullanıcı kaydı |
+| POST | /login | — | JWT token al |
+| GET | /health | — | Sağlık kontrolü |
+| GET | /metrics | — | Prometheus metrikleri |
+| GET | /me | ✓ | Mevcut kullanıcı |
+| GET | /habits | ✓ | Alışkanlık listesi |
+| POST | /habits | ✓ | Alışkanlık oluştur |
+| GET | /habits/{id} | ✓ | Detay |
+| PATCH | /habits/{id} | ✓ | Güncelle |
+| DELETE | /habits/{id} | ✓ | Sil |
+| POST | /habits/{id}/track | ✓ | Günlük takip ekle |
+| GET | /habits/{id}/streak | ✓ | Seri hesapla |
+| POST | /avatars/{id} | ✓ | Avatar yükle (S3) |
+| GET | /avatars/{id} | — | Avatar getir (S3) |
+
+---
+
+## Testler
+
+### Unit & Integration (pytest)
+
+```bash
+# Lokal PostgreSQL gerektirir (docker-compose up -d db)
+pytest tests/ --ignore=tests/e2e --ignore=tests/test_testcontainers.py -v
+
+# Coverage ile
+pytest tests/ --ignore=tests/e2e --cov=src --cov-report=html
+open htmlcov/index.html
+```
+
+### Testcontainers (Gerçek PostgreSQL container)
+
+```bash
+# Linux/CI'da çalışır (Docker daemon gerektirir)
+pytest tests/test_testcontainers.py -v
+# 4 test: schema, register, CRUD, persistence
+```
+
+### E2E (Playwright — 6 senaryo)
+
+```bash
+# docker-compose up -d ile API çalışıyor olmalı
+playwright install chromium
+pytest tests/e2e/ -v
+```
+
+| # | Senaryo | Durum |
+|---|---------|-------|
+| 1 | Kullanıcı kaydı ve giriş | ✅ |
+| 2 | Alışkanlık oluştur ve listede gör | ✅ |
+| 3 | Alışkanlık takip et ve seri gör | ✅ |
+| 4 | Alışkanlık düzenle | ✅ |
+| 5 | Yetkisiz erişim login'e yönlendirir | ✅ |
+| 6 | Geçersiz login hata gösterir | ✅ |
+
+### Postman / Newman
+
+```bash
+npm install -g newman
+newman run postman/HabitTrackerAPI.postman_collection.json \
+  --environment postman/environment.json \
+  --env-var base_url=http://localhost:8001
+```
+
+### Performans (k6)
+
+```bash
+# docker-compose up -d ile API çalışıyor olmalı
+
+# Smoke test (5 VU, 30s)
+k6 run -e BASE_URL=http://localhost:8001 perf/smoke-test.js
+
+# Load test (10→50 VU, 60s)
+k6 run -e BASE_URL=http://localhost:8001 perf/load-test.js
+```
+
+Sonuçlar: [perf/report.md](perf/report.md) — p95=285ms, 0% hata oranı ✅
+
+---
+
+## Kubernetes (Kind)
+
+```bash
+# Kind cluster oluştur
+kind create cluster --name habit-tracker
+
+# Image yükle
+docker build -t habit-tracker-api:latest .
+kind load docker-image habit-tracker-api:latest --name habit-tracker
+
+# Deploy et
+kubectl apply -f k8s/postgres.yaml
+kubectl rollout status deployment/postgres -n default --timeout=2m
+kubectl apply -f k8s/jaeger.yaml
+kubectl apply -f k8s/localstack.yaml
+kubectl apply -f k8s/configmap.yaml
+kubectl apply -f k8s/service.yaml
+kubectl apply -f k8s/deployment.yaml
+kubectl rollout status deployment/habit-tracker-api -n default --timeout=5m
+
+# Erişim
+kubectl port-forward svc/habit-tracker-api-service 8001:8001
+
+# Temizlik
+kind delete cluster --name habit-tracker
+```
+
+---
+
+## CI/CD Pipeline
+
+```
+push/PR → main
+    │
+    ├── lint         flake8 kod kalite (10 dk)
+    ├── test         pytest + coverage ≥70% + LocalStack S3 (45 dk)
+    ├── build        Docker image → GHCR (:sha + :latest) (20 dk)
+    ├── deploy-and-test  Kind K8s deploy + Newman + Playwright E2E (25 dk)
+    ├── smoke-test   k6 smoke (5VU/30s) — GHCR imajı (15 dk)
+    └── load-test    k6 load (50VU/60s) — GHCR imajı (15 dk)
+```
+
+Tüm smoke/load-test job'ları build'deki **aynı GHCR imajını** kullanır (`:sha` tag).
+
+---
+
+## Monitoring
+
+### Prometheus Metrikleri (`/metrics`)
+
+| Metrik | Tip | Açıklama |
+|--------|-----|----------|
+| `http_requests_total` | Counter | Endpoint/method/status bazlı istek sayısı |
+| `http_request_duration_seconds` | Histogram | Latency dağılımı (p50/p95/p99) |
+| `http_requests_in_progress` | Gauge | Anlık işlenen istek sayısı |
+
+### Grafana Dashboard (4 Panel)
+- Request Rate (5m)
+- Total Requests by Endpoint
+- Request Latency (p95, p99)
+- Business Metrics
+
+### OpenTelemetry Tracing (+5 bonus)
+FastAPI + SQLAlchemy otomatik enstrümantatyon. OTLP gRPC → Jaeger:4317.
+
+---
+
+## Proje Yapısı
+
+```
+habit-tracker-api/
+├── src/                    # FastAPI uygulama
+│   ├── main.py             # Endpoint'ler, middleware
+│   ├── models.py           # User, Habit, HabitLog
+│   ├── schemas.py          # Pydantic DTO'lar
+│   ├── auth.py             # JWT + bcrypt
+│   ├── database.py         # PostgreSQL bağlantısı
+│   ├── metrics.py          # Prometheus counter/histogram
+│   └── aws/s3_service.py   # LocalStack S3
+├── templates/              # Jinja2 HTML şablonları
+├── static/                 # CSS + JS
+├── tests/
+│   ├── conftest.py         # Pytest fixtures
+│   ├── factories.py        # Factory Boy (User/Habit/HabitLog)
+│   ├── unit/               # Birim testler
+│   ├── integration/        # Entegrasyon testleri (TestClient)
+│   ├── test_testcontainers.py  # Gerçek PostgreSQL container testleri
+│   └── e2e/                # Playwright E2E testleri
+├── postman/                # Postman koleksiyonu + environment
+├── k8s/                    # Kubernetes manifestleri
+│   ├── deployment.yaml
+│   ├── service.yaml
+│   ├── configmap.yaml
+│   ├── postgres.yaml
+│   ├── jaeger.yaml
+│   ├── localstack.yaml
+│   ├── prometheus.yaml
+│   ├── grafana.yaml
+│   ├── ingress.yaml
+│   └── argocd-app.yaml     # GitOps (+5 bonus)
+├── perf/
+│   ├── smoke-test.js       # k6 smoke (5VU/30s)
+│   ├── load-test.js        # k6 load (10→50VU/60s)
+│   └── report.md           # p95 sonuçları ve yorum
+├── docs/
+│   ├── architecture.png    # Sistem mimarisi diyagramı
+│   └── final-report.pdf    # 5 sayfalık final rapor
+├── grafana/provisioning/   # Grafana dashboard + datasource
+├── .github/workflows/      # CI/CD pipeline
+│   └── ci-cd.yml
+├── Dockerfile              # Multi-stage build
+├── docker-compose.yml      # Lokal geliştirme ortamı
+├── requirements.txt
+└── LICENSE                 # MIT
+```
+
+---
+
+## Teknoloji Stack
+
+| Katman | Teknoloji |
+|--------|-----------|
+| Backend | FastAPI 0.110, Python 3.11 |
+| Veritabanı | PostgreSQL 16, SQLAlchemy 2.0 |
+| Auth | JWT (python-jose), bcrypt, passlib |
+| Frontend | NGINX, Jinja2, HTML/CSS/JS |
+| Testing | pytest, Factory Boy, Faker, Playwright, k6 |
+| Containers | Docker multi-stage, Docker Compose |
+| Orchestration | Kubernetes, Kind |
+| CI/CD | GitHub Actions, GHCR |
+| Monitoring | Prometheus, Grafana, OpenTelemetry, Jaeger |
+| AWS | LocalStack S3 (boto3) |
+
+---
+
+## Şartname Karşılama Durumu
+
+| Gereksinim | Durum | Detay |
+|------------|-------|-------|
+| Mini Servis (4-6 endpoint) | ✅ | 14 endpoint, 3 entity |
+| Pytest ≥%70 coverage | ✅ | 92 test, hedef karşılandı |
+| Postman/Newman CI | ✅ | 5+ istek, CI'da çalışıyor |
+| Docker multi-stage | ✅ | builder + runtime |
+| LocalStack S3 | ✅ | Avatar upload/download |
+| Testcontainers (≥2 test) | ✅ | 4 test, gerçek PostgreSQL |
+| Factory Boy + Faker | ✅ | UserFactory/HabitFactory/LogFactory |
+| Kubernetes | ✅ | Kind cluster, tüm manifestler |
+| GitHub Actions | ✅ | 6 job pipeline |
+| Prometheus + Grafana ≥3 panel | ✅ | 4 panel dashboard |
+| k6 + p95 ölçümü | ✅ | p95=285ms (bkz. perf/report.md) |
+| E2E 3-5 senaryo | ✅ | 6/6 Playwright testi PASS |
+| docs/architecture.png | ✅ | Tam sistem diyagramı |
+| docs/final-report.pdf | ✅ | 5 sayfa, IEEE formatı |
+| **Bonus: OpenTelemetry** | ✅ | +5 — OTLP → Jaeger |
+| **Bonus: ArgoCD GitOps** | ✅ | +5 — k8s/argocd-app.yaml |
+
+---
+
+## Ortam Değişkenleri
+
+Örnek: `.env.docker` (docker-compose için), `.env.local` (lokal için)
+
+```bash
+DATABASE_URL=postgresql://user:password@db:5432/habits
+SECRET_KEY=change-in-production
+AWS_ENDPOINT_URL=http://localstack:4566
+JAEGER_HOST=jaeger
+ENABLE_TRACING=true
+```
+
+---
+
+## Lisans
+
+MIT License — bkz. [LICENSE](LICENSE)
+
+## Yazar
+
+**Mert Baytaş** — Marmara Üniversitesi, Bilgisayar Mühendisliği  
+MTH2526-B25 — Bulut Mimarilerinde Test Mühendisliği, 2025-2026 Bahar

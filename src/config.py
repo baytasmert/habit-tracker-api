@@ -35,7 +35,7 @@ class Settings(BaseSettings):
     DB_PORT: int = 5432
 
     # AWS/S3
-    AWS_ENDPOINT_URL: str
+    AWS_ENDPOINT_URL: str = "http://localstack:4566"
     AWS_REGION: str = "us-east-1"
     AWS_ACCESS_KEY_ID: str = "test"
     AWS_SECRET_ACCESS_KEY: str = "test"
@@ -57,7 +57,7 @@ class Settings(BaseSettings):
     API_URL: str = "http://localhost:8000"
 
     # Monitoring
-    JAEGER_HOST: str
+    JAEGER_HOST: str = "jaeger"
     JAEGER_PORT: int = 6831
     ENABLE_TRACING: bool = True
 

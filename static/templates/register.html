@@ -1,0 +1,173 @@
+{% extends "base.html" %}
+
+{% block title %}Register - Habit Tracker{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-form">
+        <h1>Create Account</h1>
+        <form id="registerForm">
+            <div class="form-group">
+                <label for="username">Username:</label>
+                <input type="text" id="username" name="username" placeholder="Choose a username" autocomplete="username" required>
+            </div>
+
+            <div class="form-group">
+                <label for="email">Email:</label>
+                <input type="email" id="email" name="email" placeholder="your@email.com" required>
+                <small>We'll never share your email</small>
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password:</label>
+                <input type="password" id="password" name="password" placeholder="Min. 6 characters" autocomplete="new-password" required>
+                <small>Use a strong password with letters, numbers, and symbols</small>
+            </div>
+
+            <div class="form-group">
+                <label for="password-confirm">Confirm Password:</label>
+                <input type="password" id="password-confirm" name="password-confirm" placeholder="Re-enter your password" autocomplete="new-password" required>
+            </div>
+
+            <div class="form-group">
+                <label for="avatar">Profile Photo (Optional):</label>
+                <div class="file-input-group">
+                    <input type="file" id="avatar" name="avatar" accept="image/*">
+                    <button type="button" id="clearAvatar" class="btn btn-small">Clear</button>
+                </div>
+                <small id="avatarFileName"></small>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Register</button>
+        </form>
+
+        <p class="auth-link">
+            Already have an account? <a href="/login">Login here</a>
+        </p>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Handle avatar file selection
+document.getElementById('avatar').addEventListener('change', () => {
+    const file = document.getElementById('avatar').files[0];
+    if (file) {
+        document.getElementById('avatarFileName').textContent = 'Selected: ' + file.name;
+    }
+});
+
+// Handle clear avatar button
+document.getElementById('clearAvatar').addEventListener('click', () => {
+    document.getElementById('avatar').value = '';
+    document.getElementById('avatarFileName').textContent = '';
+});
+
+document.getElementById('registerForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const username = document.getElementById('username').value;
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+    const passwordConfirm = document.getElementById('password-confirm').value;
+    const avatarFile = document.getElementById('avatar').files[0];
+
+    // Validate username
+    if (username.length < 3) {
+        alert('Username must be at least 3 characters long!');
+        return;
+    }
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+        alert('Please enter a valid email address!');
+        return;
+    }
+
+    if (password !== passwordConfirm) {
+        alert('Passwords do not match!');
+        return;
+    }
+
+    if (password.length < 6) {
+        alert('Password must be at least 6 characters long!');
+        return;
+    }
+
+    try {
+        const response = await fetch('/register', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ username, password, email })
+        });
+
+        if (!response.ok) {
+            const data = await response.json();
+            const errorMsg = data.detail || 'Registration failed';
+
+            // Show error message
+            const alertDiv = document.createElement('div');
+            alertDiv.className = 'alert alert-error';
+            alertDiv.textContent = 'Error: ' + errorMsg;
+            document.querySelector('.auth-form').prepend(alertDiv);
+
+            // Auto-remove error after 5 seconds
+            setTimeout(() => alertDiv.remove(), 5000);
+            return;
+        }
+
+        const userData = await response.json();
+
+        // Upload avatar if provided
+        if (avatarFile) {
+            try {
+                // Login first to get token
+                const loginResponse = await fetch('/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ username, password })
+                });
+
+                if (loginResponse.ok) {
+                    const loginData = await loginResponse.json();
+                    const token = loginData.access_token;
+
+                    // Upload avatar
+                    const formData = new FormData();
+                    formData.append('file', avatarFile);
+
+                    await fetch('/users/avatar', {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: formData
+                    });
+                }
+            } catch (error) {
+                console.error('Avatar upload failed:', error);
+            }
+        }
+
+        // Show success message
+        const successDiv = document.createElement('div');
+        successDiv.className = 'alert alert-success';
+        successDiv.textContent = 'Registration successful! Redirecting to login in 2 seconds...';
+        document.querySelector('.auth-form').prepend(successDiv);
+
+        // Redirect after 2 seconds
+        setTimeout(() => {
+            window.location.href = '/login';
+        }, 2000);
+    } catch (error) {
+        alert('Error: ' + error.message);
+    }
+});
+</script>
+{% endblock %}

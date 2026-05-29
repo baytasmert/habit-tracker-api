@@ -1,0 +1,205 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Habit Tracker{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <div class="dashboard-header">
+        <div class="header-left">
+            <h1>My Habits</h1>
+        </div>
+        <div class="header-right">
+            <a href="/create-habit" class="btn btn-primary">Create Habit</a>
+            <a href="/admin" class="btn btn-secondary">Admin Panel</a>
+        </div>
+    </div>
+
+    <div class="profile-section">
+        <h2>My Profile</h2>
+        <div class="profile-card">
+            <div class="avatar-container">
+                <img id="avatarImage" src="/avatars/0" alt="Avatar" class="avatar">
+                <div class="avatar-actions">
+                    <label class="btn btn-small btn-primary">
+                        Upload Photo
+                        <input type="file" id="avatarUpload" accept="image/*" style="display:none;">
+                    </label>
+                    <button id="deleteAvatarBtn" class="btn btn-small btn-danger">Delete Photo</button>
+                </div>
+            </div>
+            <div class="profile-info">
+                <p><strong>Username:</strong> <span id="profileUsername">Loading...</span></p>
+                <p><strong>Email:</strong> <span id="profileEmail">Loading...</span></p>
+            </div>
+        </div>
+    </div>
+
+    <div id="habitsList" class="habits-list">
+        <h2>Habits</h2>
+        <p class="loading">Loading habits...</p>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const token = localStorage.getItem('auth_token');
+
+async function loadProfile() {
+    if (!token) {
+        window.location.href = '/login';
+        return;
+    }
+
+    try {
+        const response = await fetch('/me', {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        if (response.status === 401) {
+            window.location.href = '/login';
+            return;
+        }
+
+        if (response.ok) {
+            const user = await response.json();
+            document.getElementById('profileUsername').textContent = user.username || 'User';
+            document.getElementById('profileEmail').textContent = user.email || 'No email';
+            document.getElementById('avatarImage').src = `/avatars/${user.id}`;
+        }
+    } catch (error) {
+        console.error('Error loading profile:', error);
+    }
+}
+
+async function loadHabits() {
+    if (!token) {
+        window.location.href = '/login';
+        return;
+    }
+
+    try {
+        const response = await fetch('/habits', {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        if (response.status === 401) {
+            window.location.href = '/login';
+            return;
+        }
+
+        if (!response.ok) {
+            throw new Error('Failed to load habits');
+        }
+
+        const habits = await response.json();
+        const habitsList = document.getElementById('habitsList');
+
+        if (habits.length === 0) {
+            habitsList.innerHTML = '<h2>Habits</h2><p class="empty-state">No habits yet. <a href="/create-habit">Create one!</a></p>';
+            return;
+        }
+
+        habitsList.innerHTML = '<h2>Habits</h2>' + habits.map(habit => `
+            <div class="habit-card">
+                <h3>${habit.name || 'Untitled'}</h3>
+                <p>${habit.description || ''}</p>
+                <p class="habit-meta">Goal: ${habit.goal_days_per_week} days/week</p>
+                <div class="habit-actions">
+                    <a href="/edit-habit?id=${habit.id}" class="btn btn-secondary">View</a>
+                    <button class="btn btn-danger" onclick="deleteHabit(${habit.id})">Delete</button>
+                </div>
+            </div>
+        `).join('');
+    } catch (error) {
+        document.getElementById('habitsList').innerHTML = `<p class="error">Error: ${error.message}</p>`;
+    }
+}
+
+async function deleteHabit(habitId) {
+    if (!confirm('Are you sure you want to delete this habit?')) {
+        return;
+    }
+
+    try {
+        const response = await fetch(`/habits/${habitId}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        if (response.ok) {
+            loadHabits();
+        } else {
+            alert('Failed to delete habit');
+        }
+    } catch (error) {
+        alert('Error: ' + error.message);
+    }
+}
+
+document.getElementById('avatarUpload').addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+        const response = await fetch('/users/avatar', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            },
+            body: formData
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            // Reload avatar from proxy endpoint with cache busting
+            const userId = data.user_id;
+            document.getElementById('avatarImage').src = `/avatars/${userId}?t=` + new Date().getTime();
+            alert('Avatar uploaded successfully!');
+        } else {
+            alert('Failed to upload avatar');
+        }
+    } catch (error) {
+        alert('Error: ' + error.message);
+    }
+});
+
+document.getElementById('deleteAvatarBtn').addEventListener('click', async () => {
+    if (!confirm('Delete your avatar?')) return;
+
+    try {
+        const response = await fetch('/users/avatar', {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        if (response.ok) {
+            // Reload to show default avatar from proxy endpoint
+            const userId = document.getElementById('avatarImage').src.match(/\/avatars\/(\d+)/)?.[1] || '0';
+            document.getElementById('avatarImage').src = `/avatars/${userId}?t=` + new Date().getTime();
+            alert('Avatar deleted!');
+        } else {
+            alert('Failed to delete avatar');
+        }
+    } catch (error) {
+        alert('Error: ' + error.message);
+    }
+});
+
+loadProfile();
+loadHabits();
+</script>
+{% endblock %}

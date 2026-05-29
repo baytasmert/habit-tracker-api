@@ -10,12 +10,9 @@ def get_api_url():
     api_url = os.getenv("API_URL")
     if api_url:
         return api_url
-    # Try localhost:8000 first (inside Docker), fall back to 8001 (host)
-    try:
-        requests.get("http://localhost:8000/health", timeout=5)
-        return "http://localhost:8000"
-    except (requests.RequestException, Exception):
-        return "http://localhost:8001"
+    # Frontend (NGINX) serves all UI pages on 8001
+    # API (backend) serves REST endpoints on 8000
+    return "http://localhost:8001"
 
 
 API_URL = get_api_url()

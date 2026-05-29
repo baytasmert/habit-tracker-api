@@ -1,0 +1,261 @@
+{% extends "base.html" %}
+
+{% block title %}Create Habit - Habit Tracker{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <div class="form-card">
+        <h1>Create New Habit</h1>
+        <form id="createHabitForm">
+
+            <!-- Section 1: Basic Info -->
+            <div class="form-section">
+                <h2>📋 Basic Information</h2>
+                <div class="form-group">
+                    <label for="name">Habit Name *</label>
+                    <input type="text" id="name" name="name" placeholder="e.g., Morning Exercise" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="description">Description</label>
+                    <textarea id="description" name="description" placeholder="Why is this habit important? What do you want to achieve?" rows="3"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="is_negative" name="is_negative">
+                        <span>This is a habit to <strong>AVOID</strong> (e.g., quit smoking)</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Section 2: Habit Type & Goals -->
+            <div class="form-section">
+                <h2>⏰ Habit Type & Goals</h2>
+                <div class="form-group">
+                    <label for="habit_type">What type of habit is this? *</label>
+                    <div class="radio-group">
+                        <label class="radio-option">
+                            <input type="radio" name="habit_type" value="daily" checked>
+                            <strong>Daily</strong> - Do it every day or achieve a weekly goal
+                        </label>
+                        <label class="radio-option">
+                            <input type="radio" name="habit_type" value="weekly">
+                            <strong>Weekly</strong> - Specific days per week
+                        </label>
+                        <label class="radio-option">
+                            <input type="radio" name="habit_type" value="count">
+                            <strong>Count</strong> - Track a specific number (e.g., 10 pages, 5 km)
+                        </label>
+                        <label class="radio-option">
+                            <input type="radio" name="habit_type" value="time">
+                            <strong>Time</strong> - Track duration in minutes
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Goal fields - shown based on habit_type -->
+                <div id="goal_days_field" class="form-group">
+                    <label for="goal_days_per_week">Target (days per week) *</label>
+                    <select id="goal_days_per_week" name="goal_days_per_week">
+                        <option value="">Select...</option>
+                        <option value="1">1 day</option>
+                        <option value="2">2 days</option>
+                        <option value="3">3 days</option>
+                        <option value="4">4 days</option>
+                        <option value="5">5 days</option>
+                        <option value="6">6 days</option>
+                        <option value="7">7 days</option>
+                    </select>
+                </div>
+
+                <div id="goal_count_field" class="form-group" style="display: none;">
+                    <label for="goal_count">Target Count *</label>
+                    <input type="number" id="goal_count" name="goal_count" placeholder="e.g., 10 pages, 5 km" min="1">
+                </div>
+
+                <div id="target_duration_field" class="form-group" style="display: none;">
+                    <label for="target_duration">Target Duration (minutes) *</label>
+                    <select id="target_duration" name="target_duration">
+                        <option value="">Select...</option>
+                        <option value="15">15 minutes</option>
+                        <option value="30">30 minutes</option>
+                        <option value="45">45 minutes</option>
+                        <option value="60">1 hour</option>
+                        <option value="90">1.5 hours</option>
+                        <option value="120">2 hours</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Section 3: Categorization -->
+            <div class="form-section">
+                <h2>🏷️ Tags & Categories</h2>
+                <div class="form-group">
+                    <label for="tags">Tags (optional)</label>
+                    <input type="text" id="tags" name="tags" placeholder="e.g., spor, sağlık, kişisel gelişim (comma-separated)">
+                    <small>Popular tags: spor, sanat, sağlık, kariyer, aile, kişisel gelişim, eğlence</small>
+                </div>
+            </div>
+
+            <!-- Section 4: Personalization -->
+            <div class="form-section">
+                <h2>🎨 Personalization</h2>
+                <div class="form-group">
+                    <label for="color">Color</label>
+                    <div class="color-picker-wrapper">
+                        <input type="color" id="color" name="color" value="#3B82F6">
+                        <span id="colorValue">#3B82F6</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="image">Habit Photo (Optional)</label>
+                    <input type="file" id="image" name="image" accept="image/*">
+                    <small>Upload a photo to represent your habit</small>
+                </div>
+            </div>
+
+            <!-- Submit -->
+            <div class="form-section form-actions">
+                <button type="submit" class="btn btn-primary">Create Habit</button>
+                <a href="/home" class="btn btn-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Utility to get auth token from localStorage or cookies
+function getAuthToken() {
+    // Try localStorage first (preferred)
+    let token = localStorage.getItem('auth_token');
+    if (token) return token;
+
+    // Fall back to cookies
+    const cookies = document.cookie.split(';');
+    for (let cookie of cookies) {
+        const [name, value] = cookie.trim().split('=');
+        if (name === 'auth_token') return value;
+    }
+    return null;
+}
+
+const authToken = getAuthToken();
+
+// Handle habit_type radio buttons - show/hide conditional fields
+document.querySelectorAll('input[name="habit_type"]').forEach(radio => {
+    radio.addEventListener('change', (e) => {
+        const type = e.target.value;
+        const daysField = document.getElementById('goal_days_field');
+        const countField = document.getElementById('goal_count_field');
+        const timeField = document.getElementById('target_duration_field');
+
+        daysField.style.display = (type === 'daily' || type === 'weekly') ? 'block' : 'none';
+        countField.style.display = (type === 'count') ? 'block' : 'none';
+        timeField.style.display = (type === 'time') ? 'block' : 'none';
+
+        // Update required attributes
+        document.getElementById('goal_days_per_week').required = (type === 'daily' || type === 'weekly');
+        document.getElementById('goal_count').required = (type === 'count');
+        document.getElementById('target_duration').required = (type === 'time');
+    });
+});
+
+// Color picker update display
+document.getElementById('color').addEventListener('change', (e) => {
+    document.getElementById('colorValue').textContent = e.target.value;
+});
+
+// Form submission
+document.getElementById('createHabitForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    if (!authToken) {
+        window.location.href = '/login';
+        return;
+    }
+
+    const habitType = document.querySelector('input[name="habit_type"]:checked').value;
+    const name = document.getElementById('name').value;
+    const description = document.getElementById('description').value;
+    const is_negative = document.getElementById('is_negative').checked;
+    const tags = document.getElementById('tags').value || null;
+    const imageFile = document.getElementById('image').files[0];
+
+    // Collect goals based on type
+    let goalData = { habit_type: habitType, is_negative, tags };
+
+    if (habitType === 'daily' || habitType === 'weekly') {
+        const daysValue = document.getElementById('goal_days_per_week').value;
+        if (!daysValue) {
+            alert('Please select days per week');
+            return;
+        }
+        goalData.goal_days_per_week = parseInt(daysValue);
+    } else if (habitType === 'count') {
+        const countValue = document.getElementById('goal_count').value;
+        if (!countValue) {
+            alert('Please enter target count');
+            return;
+        }
+        goalData.goal_count = parseInt(countValue);
+    } else if (habitType === 'time') {
+        const timeValue = document.getElementById('target_duration').value;
+        if (!timeValue) {
+            alert('Please select target duration');
+            return;
+        }
+        goalData.target_duration = parseInt(timeValue);
+    }
+
+    const createPayload = {
+        name,
+        description,
+        ...goalData
+    };
+
+    try {
+        const response = await fetch('/habits', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${authToken}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(createPayload)
+        });
+
+        if (!response.ok) {
+            const error = await response.json();
+            alert('Failed to create habit: ' + (error.detail || 'Unknown error'));
+            return;
+        }
+
+        const habit = await response.json();
+
+        if (imageFile) {
+            const formData = new FormData();
+            formData.append('file', imageFile);
+
+            const imageResponse = await fetch(`/habits/${habit.id}/image`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${authToken}`
+                },
+                body: formData
+            });
+
+            if (!imageResponse.ok) {
+                console.error('Image upload failed');
+            }
+        }
+
+        window.location.href = '/home';
+    } catch (error) {
+        alert('Error: ' + error.message);
+    }
+});
+</script>
+{% endblock %}

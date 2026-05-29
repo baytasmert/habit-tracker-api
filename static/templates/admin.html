@@ -1,0 +1,147 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Panel - Habit Tracker{% endblock %}
+
+{% block content %}
+<div class="admin-container">
+    <div class="admin-header">
+        <h1>Admin Panel</h1>
+        <a href="/home" class="btn btn-secondary">Back to Home</a>
+    </div>
+
+    <div class="admin-content">
+        <section class="admin-section">
+            <h2>System Health Status</h2>
+            <div id="healthStatus" class="health-grid">
+                <p class="loading">Checking services...</p>
+            </div>
+        </section>
+
+        <section class="admin-section">
+            <h2>Quick Links</h2>
+            <div class="quick-links" id="quickLinks">
+                <p class="loading">Loading quick links...</p>
+            </div>
+        </section>
+
+        <section class="admin-section">
+            <h2>Statistics</h2>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h4>Total Users</h4>
+                    <p id="totalUsers" class="stat-value">Loading...</p>
+                </div>
+                <div class="stat-card">
+                    <h4>Total Habits</h4>
+                    <p id="totalHabits" class="stat-value">Loading...</p>
+                </div>
+                <div class="stat-card">
+                    <h4>API Uptime</h4>
+                    <p id="apiUptime" class="stat-value">Loading...</p>
+                </div>
+            </div>
+        </section>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+if (!token) {
+    window.location.href = '/login';
+}
+
+async function checkHealth() {
+    try {
+        const response = await fetch('/admin/health', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (!response.ok) {
+            document.getElementById('healthStatus').innerHTML = '<p class="error">Failed to load health status</p>';
+            return;
+        }
+
+        const data = await response.json();
+        const healthGrid = document.getElementById('healthStatus');
+
+        let html = '';
+        for (const [key, service] of Object.entries(data.services)) {
+            const statusClass = service.status === 'healthy' ? 'healthy' :
+                               service.status === 'unhealthy' ? 'unhealthy' : 'offline';
+            const statusIcon = service.status === 'healthy' ? '✓' : '✗';
+
+            let cardHtml = `
+                <div class="health-card status-${statusClass}">
+                    <div class="health-card-header">
+                        <h3>${service.display_name}</h3>
+                        <span class="status ${statusClass}">${statusIcon} ${service.status}</span>
+                    </div>
+                    <p class="health-message">${service.message}</p>
+            `;
+
+            if (service.service_url) {
+                cardHtml += `<a href="${service.service_url}" target="_blank" class="btn btn-small btn-outline">Open</a>`;
+            }
+
+            cardHtml += '</div>';
+            html += cardHtml;
+        }
+
+        healthGrid.innerHTML = html;
+
+        // Generate quick links
+        generateQuickLinks(data.services);
+    } catch (error) {
+        console.error('Health check error:', error);
+        document.getElementById('healthStatus').innerHTML = `<p class="error">Error: ${error.message}</p>`;
+    }
+}
+
+function generateQuickLinks(services) {
+    const quickLinks = document.getElementById('quickLinks');
+    let linksHtml = '';
+
+    const linkServices = [
+        { key: 'api', label: 'API Documentation (Swagger)', suffix: '/docs' },
+        { key: 'grafana', label: 'Grafana Dashboards' },
+        { key: 'prometheus', label: 'Prometheus Metrics' },
+        { key: 'jaeger', label: 'Jaeger Tracing' },
+        { key: 'argocd', label: 'ArgoCD' },
+        { key: 's3', label: 'LocalStack (S3)' }
+    ];
+
+    linkServices.forEach(link => {
+        if (services[link.key] && services[link.key].service_url) {
+            const url = link.suffix ? services[link.key].service_url + link.suffix : services[link.key].service_url;
+            linksHtml += `<a href="${url}" target="_blank" class="btn btn-primary">${link.label}</a>`;
+        }
+    });
+
+    quickLinks.innerHTML = linksHtml;
+}
+
+async function loadStatistics() {
+    if (!token) return;
+
+    try {
+        const response = await fetch('/habits', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (response.ok) {
+            const habits = await response.json();
+            document.getElementById('totalHabits').textContent = habits.length;
+        }
+    } catch (error) {
+        console.error('Error loading stats:', error);
+    }
+
+    document.getElementById('totalUsers').textContent = '1+';
+    document.getElementById('apiUptime').textContent = 'Running';
+}
+
+checkHealth();
+loadStatistics();
+setInterval(checkHealth, 30000);
+</script>
+{% endblock %}

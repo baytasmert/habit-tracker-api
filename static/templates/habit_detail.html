@@ -1,0 +1,393 @@
+{% extends "base.html" %}
+
+{% block title %}Habit Details - Habit Tracker{% endblock %}
+
+{% block content %}
+<div class="detail-container">
+    <a href="/my-habits" class="btn btn-secondary">← Back to Habits</a>
+
+    <div class="detail-card" id="habitDetail">
+        <p class="loading">Loading habit...</p>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const habitId = new URLSearchParams(window.location.search).get('id');
+
+async function loadHabitDetail() {
+    if (!token) {
+        window.location.href = '/login';
+        return;
+    }
+
+    if (!habitId) {
+        document.getElementById('habitDetail').innerHTML = '<p class="error">Habit ID not found</p>';
+        return;
+    }
+
+    try {
+        // Load habit
+        const habitResponse = await fetch(`/habits/${habitId}`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        if (habitResponse.status === 401) {
+            window.location.href = '/login';
+            return;
+        }
+
+        if (!habitResponse.ok) {
+            throw new Error('Habit not found');
+        }
+
+        const habit = await habitResponse.json();
+
+        // Load streak
+        const streakResponse = await fetch(`/habits/${habitId}/streak`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        let streakData = null;
+        if (streakResponse.ok) {
+            streakData = await streakResponse.json();
+        }
+
+        // Render
+        let imageHtml = '';
+        if (habit.image_url) {
+            imageHtml = `<img src="${habit.image_url}" alt="${habit.name}" class="habit-detail-image">`;
+        }
+
+        document.getElementById('habitDetail').innerHTML = `
+            ${imageHtml}
+            <h1>${habit.name || 'Untitled'}</h1>
+            <p class="description">${habit.description || 'No description'}</p>
+
+            <div class="habit-stats">
+                <div class="stat">
+                    <span class="stat-label">Hedef:</span>
+                    <span class="stat-value">${habit.goal_days_per_week} gün/hafta</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-label">Mevcut Seri:</span>
+                    <span class="stat-value">${streakData ? streakData.streak_days + ' gün' : '0 gün'}</span>
+                </div>
+            </div>
+
+            <div id="logsHistory" style="margin-top: 2rem; padding: 1.5rem; background: #f8f9fa; border-radius: 8px;">
+                <h3>📋 Takip Kaydları (Son 10)</h3>
+                <div id="logsList" style="margin-top: 1rem;">
+                    <p style="color: #999;">Yükleniyor...</p>
+                </div>
+            </div>
+
+            <div class="habit-actions">
+                <button class="btn btn-primary" onclick="trackHabit()">Track</button>
+                <button class="btn btn-secondary" onclick="editHabit()">Edit</button>
+                <button class="btn btn-danger" onclick="deleteHabit()">Delete</button>
+            </div>
+
+            <div id="editForm" style="display: none;" class="edit-form">
+                <h3>Edit Habit</h3>
+                <form id="editHabitForm">
+                    <div class="form-group">
+                        <label for="edit_name">Habit Name:</label>
+                        <input type="text" id="edit_name" name="name" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="edit_description">Description:</label>
+                        <textarea id="edit_description" name="description" rows="4"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="edit_goal">Goal (days per week):</label>
+                        <select id="edit_goal" name="goal_days_per_week" required>
+                            <option value="1">1 day</option>
+                            <option value="2">2 days</option>
+                            <option value="3">3 days</option>
+                            <option value="4">4 days</option>
+                            <option value="5">5 days</option>
+                            <option value="6">6 days</option>
+                            <option value="7">7 days</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="edit_image">Habit Photo (Optional):</label>
+                        <input type="file" id="edit_image" name="image" accept="image/*">
+                        <small>Upload a new photo to replace the current one</small>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">Save</button>
+                    <button type="button" class="btn btn-secondary" onclick="document.getElementById('editForm').style.display='none'">Cancel</button>
+                </form>
+            </div>
+
+            <div id="trackForm" style="display: none;" class="track-form">
+                <h3>🎯 Bugünün Takibini Ekle</h3>
+                <p style="color: #666; margin-bottom: 1.5rem;">Aşağıdaki alanları doldurarak bugünün ilerlemenizi kaydedin</p>
+                <form id="trackActivityForm">
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" name="done" id="done">
+                            <span id="doneLabel"><strong>Tamamladım mı?</strong></span>
+                        </label>
+                        <small style="display: block; margin-top: 0.3rem;">Alışkanlığı bugün tamamladıysanız işaretle</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="duration"><strong>Harcanan süre (dakika):</strong></label>
+                        <input type="number" id="duration" name="duration" min="0" placeholder="örn: 30">
+                        <small>Aktivite kaç dakika sürdü? (opsiyonel)</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label><strong>Şu an nasıl hissediyorsun?</strong></label>
+                        <div class="mood-emoji-selector">
+                            <button type="button" class="mood-emoji" data-emoji="😢" title="Çok kötü">😢</button>
+                            <button type="button" class="mood-emoji" data-emoji="😐" title="Normal">😐</button>
+                            <button type="button" class="mood-emoji" data-emoji="😊" title="İyi">😊</button>
+                            <button type="button" class="mood-emoji" data-emoji="😄" title="Çok iyi">😄</button>
+                            <button type="button" class="mood-emoji" data-emoji="😍" title="Harika!">😍</button>
+                        </div>
+                        <input type="hidden" id="mood_emoji" name="mood_emoji">
+                        <small>Mood'unu seç - alışkanlığın ruh haline nasıl etki ettiğini takip et</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="photoFile"><strong>Fotoğraf ekle (opsiyonel):</strong></label>
+                        <input type="file" id="photoFile" name="photoFile" accept="image/*">
+                        <small>İlerlemenizin kanıtı olarak bir fotoğraf ekleyin</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="notes"><strong>Notlar (opsiyonel):</strong></label>
+                        <textarea id="notes" name="notes" rows="2" placeholder="Nasıl geçti? Herhangi bir not?"></textarea>
+                        <small>Deneyiminizi yazın, zorluklar veya başarılar</small>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">Kaydet</button>
+                    <button type="button" class="btn btn-secondary" onclick="document.getElementById('trackForm').style.display='none'">İptal</button>
+                </form>
+            </div>
+        `;
+
+        document.getElementById('trackActivityForm').addEventListener('submit', saveTracking);
+        document.getElementById('editHabitForm').addEventListener('submit', saveEdit);
+
+        // Pre-fill edit form with current values
+        document.getElementById('edit_name').value = habit.name || '';
+        document.getElementById('edit_description').value = habit.description || '';
+        document.getElementById('edit_goal').value = habit.goal_days_per_week || '5';
+
+        // Handle mood emoji selection
+        document.querySelectorAll('.mood-emoji').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                document.querySelectorAll('.mood-emoji').forEach(b => b.classList.remove('selected'));
+                btn.classList.add('selected');
+                document.getElementById('mood_emoji').value = btn.dataset.emoji;
+            });
+        });
+
+        // Update checkbox label based on habit type
+        const doneCheckbox = document.getElementById('done');
+        const doneLabel = document.getElementById('doneLabel');
+        if (habit.is_negative) {
+            doneLabel.textContent = 'I resisted the temptation';
+            doneCheckbox.addEventListener('change', (e) => {
+                doneLabel.textContent = e.target.checked ? 'I resisted the temptation ✓' : 'I resisted the temptation';
+            });
+        }
+
+        // Load and display logs history
+        loadAndDisplayLogs(habit.logs || []);
+
+    } catch (error) {
+        document.getElementById('habitDetail').innerHTML = `<p class="error">Error: ${error.message}</p>`;
+    }
+}
+
+function loadAndDisplayLogs(logs) {
+    const logsList = document.getElementById('logsList');
+
+    if (!logs || logs.length === 0) {
+        logsList.innerHTML = '<p style="color: #999;">Henüz takip kaydı yok</p>';
+        return;
+    }
+
+    // Show last 10 logs, newest first
+    const recentLogs = logs.slice().reverse().slice(0, 10);
+
+    logsList.innerHTML = recentLogs.map(log => {
+        const date = new Date(log.log_date).toLocaleDateString('tr-TR');
+        const status = log.done ? '✅ Tamamlandı' : '❌ Yapılmadı';
+        const mood = log.mood_emoji ? ` ${log.mood_emoji}` : '';
+        const duration = log.duration ? ` (${log.duration} dk)` : '';
+
+        return `
+            <div style="padding: 0.75rem; background: white; border-radius: 6px; margin-bottom: 0.5rem; border-left: 3px solid #0077be;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <strong>${date}</strong> - ${status}${mood}${duration}
+                    </div>
+                </div>
+                ${log.notes ? `<small style="color: #666; display: block; margin-top: 0.3rem;">Not: ${log.notes}</small>` : ''}
+            </div>
+        `;
+    }).join('');
+}
+
+function trackHabit() {
+    document.getElementById('trackForm').style.display = 'block';
+}
+
+function editHabit() {
+    document.getElementById('editForm').style.display = 'block';
+}
+
+async function saveTracking(e) {
+    e.preventDefault();
+
+    const done = document.getElementById('done').checked;
+    const duration = parseInt(document.getElementById('duration').value) || 0;
+    const moodEmoji = document.getElementById('mood_emoji').value;
+    const notes = document.getElementById('notes').value;
+    const photoFile = document.getElementById('photoFile').files[0];
+
+    const trackPayload = {
+        done,
+        duration,
+        mood_emoji: moodEmoji || null,
+        notes: notes || null
+    };
+
+    try {
+        const response = await fetch(`/habits/${habitId}/track`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(trackPayload)
+        });
+
+        if (!response.ok) {
+            alert('Failed to save tracking');
+            return;
+        }
+
+        const logData = await response.json();
+
+        // Upload photo if provided
+        if (photoFile && logData.habit_id) {
+            const formData = new FormData();
+            formData.append('file', photoFile);
+
+            const photoResponse = await fetch(`/habits/${habitId}/track-photo`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                },
+                body: formData
+            });
+
+            if (!photoResponse.ok) {
+                console.error('Photo upload failed');
+            }
+        }
+
+        document.getElementById('trackForm').style.display = 'none';
+        loadHabitDetail();
+    } catch (error) {
+        alert('Error: ' + error.message);
+    }
+}
+
+async function saveEdit(e) {
+    e.preventDefault();
+
+    const name = document.getElementById('edit_name').value;
+    const description = document.getElementById('edit_description').value;
+    const goal_days_per_week = parseInt(document.getElementById('edit_goal').value);
+    const imageFile = document.getElementById('edit_image').files[0];
+
+    try {
+        const response = await fetch(`/habits/${habitId}`, {
+            method: 'PATCH',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                name,
+                description,
+                goal_days_per_week
+            })
+        });
+
+        if (!response.ok) {
+            alert('Failed to save habit');
+            return;
+        }
+
+        if (imageFile) {
+            const formData = new FormData();
+            formData.append('file', imageFile);
+
+            const imageResponse = await fetch(`/habits/${habitId}/image`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                },
+                body: formData
+            });
+
+            if (!imageResponse.ok) {
+                console.error('Image upload failed');
+            }
+        }
+
+        document.getElementById('editForm').style.display = 'none';
+        loadHabitDetail();
+    } catch (error) {
+        alert('Error: ' + error.message);
+    }
+}
+
+async function deleteHabit() {
+    if (!confirm('Are you sure you want to delete this habit?')) {
+        return;
+    }
+
+    try {
+        const response = await fetch(`/habits/${habitId}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        if (response.ok) {
+            window.location.href = '/my-habits';
+        } else {
+            alert('Failed to delete habit');
+        }
+    } catch (error) {
+        alert('Error: ' + error.message);
+    }
+}
+
+// Load on page load
+loadHabitDetail();
+</script>
+{% endblock %}

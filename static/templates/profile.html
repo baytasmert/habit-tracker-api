@@ -1,0 +1,157 @@
+{% extends "base.html" %}
+
+{% block title %}Profile - Habit Tracker{% endblock %}
+
+{% block content %}
+<div class="profile-container">
+    <a href="/home" class="btn btn-outline btn-small">← Back to Home</a>
+
+    <div class="profile-card">
+        <h1>My Profile</h1>
+
+        <div class="profile-section">
+            <div class="profile-header">
+                <div class="profile-avatar-section">
+                    <img id="profileAvatar" src="/avatars/0" alt="Profile Avatar" class="avatar-large">
+                    <div class="avatar-info">
+                        <h2 id="profileUsername">Loading...</h2>
+                        <p id="profileEmail" class="text-muted">Loading...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="profile-section">
+            <h3>Change Profile Photo</h3>
+            <form id="avatarForm" class="upload-form">
+                <div class="form-group">
+                    <label for="avatarFile">Upload Photo:</label>
+                    <input type="file" id="avatarFile" name="avatar" accept="image/*" required>
+                    <small>JPG, PNG (max 5MB)</small>
+                </div>
+                <button type="submit" class="btn btn-primary">Update Avatar</button>
+            </form>
+            <div id="uploadMessage"></div>
+        </div>
+
+        <div class="profile-section">
+            <h3>Account Settings</h3>
+            <div class="settings-list">
+                <div class="setting-item">
+                    <span class="setting-label">Username:</span>
+                    <span id="settingUsername" class="setting-value">-</span>
+                </div>
+                <div class="setting-item">
+                    <span class="setting-label">Email:</span>
+                    <span id="settingEmail" class="setting-value">-</span>
+                </div>
+                <div class="setting-item">
+                    <span class="setting-label">Member Since:</span>
+                    <span id="settingCreated" class="setting-value">-</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+async function loadProfile() {
+    const token = localStorage.getItem('auth_token');
+    if (!token) {
+        window.location.href = '/login';
+        return;
+    }
+
+    try {
+        const response = await fetch('/me', {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        if (response.status === 401) {
+            window.location.href = '/login';
+            return;
+        }
+
+        if (!response.ok) {
+            throw new Error('Failed to load profile');
+        }
+
+        const user = await response.json();
+
+        document.getElementById('profileUsername').textContent = user.username || 'User';
+        document.getElementById('profileEmail').textContent = user.email || '';
+        document.getElementById('settingUsername').textContent = user.username || '-';
+        document.getElementById('settingEmail').textContent = user.email || '-';
+        document.getElementById('settingCreated').textContent = user.created_at ? new Date(user.created_at).toLocaleDateString() : '-';
+
+        document.getElementById('profileAvatar').src = `/avatars/${user.id}?t=${Date.now()}`;
+    } catch (error) {
+        console.error('Error loading profile:', error);
+        document.querySelector('.profile-card').innerHTML = `<p class="error">Error loading profile: ${error.message}</p>`;
+    }
+}
+
+document.getElementById('avatarForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const token = localStorage.getItem('auth_token');
+    const avatarFile = document.getElementById('avatarFile').files[0];
+
+    if (!avatarFile) {
+        showMessage('Please select a file', 'error');
+        return;
+    }
+
+    if (avatarFile.size > 5 * 1024 * 1024) {
+        showMessage('File size must be less than 5MB', 'error');
+        return;
+    }
+
+    try {
+        const formData = new FormData();
+        formData.append('file', avatarFile);
+
+        const response = await fetch('/users/avatar', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            },
+            body: formData
+        });
+
+        if (response.ok) {
+            showMessage('Avatar updated successfully!', 'success');
+            document.getElementById('avatarFile').value = '';
+
+            const user = await fetch('/me', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            }).then(r => r.json());
+
+            document.getElementById('profileAvatar').src = `/avatars/${user.id}?t=${Date.now()}`;
+        } else {
+            const error = await response.json();
+            showMessage('Failed to upload avatar: ' + (error.detail || 'Unknown error'), 'error');
+        }
+    } catch (error) {
+        showMessage('Error: ' + error.message, 'error');
+    }
+});
+
+function showMessage(message, type) {
+    const messageDiv = document.getElementById('uploadMessage');
+    messageDiv.className = `alert alert-${type}`;
+    messageDiv.textContent = message;
+    setTimeout(() => {
+        messageDiv.textContent = '';
+        messageDiv.className = '';
+    }, 5000);
+}
+
+loadProfile();
+</script>
+{% endblock %}

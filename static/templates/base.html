@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Habit Tracker{% endblock %}</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <a id="logoLink" href="/" class="logo">🎯 Alışkanlık Takip</a>
+            <div class="nav-links" id="navLinks">
+                <a href="/register">Kaydol</a>
+                <a href="/login">Giriş Yap</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        {% if error %}
+            <div class="alert alert-error">{{ error }}</div>
+        {% endif %}
+        {% if success %}
+            <div class="alert alert-success">{{ success }}</div>
+        {% endif %}
+
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="footer">
+        <p>&copy; 2026 Habit Tracker. Built with FastAPI and FastUI.</p>
+    </footer>
+
+    <script>
+        // Update navbar and logo when authenticated
+        const token = localStorage.getItem('auth_token');
+        const logoLink = document.getElementById('logoLink');
+
+        if (token) {
+            // Logged in: logo goes to home
+            logoLink.href = '/home';
+
+            const navLinks = document.getElementById('navLinks');
+            navLinks.innerHTML = `
+                <a href="/home">Anasayfa</a>
+                <a href="/my-habits">Alışkanlıklar</a>
+                <a href="/profile">Profil</a>
+                <a href="/logout">Çıkış Yap</a>
+            `;
+        } else {
+            // Not logged in: logo goes to landing
+            logoLink.href = '/';
+        }
+    </script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

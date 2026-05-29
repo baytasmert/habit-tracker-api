@@ -15,7 +15,7 @@
 
 {% block scripts %}
 <script>
-const token = localStorage.getItem('auth_token');
+// `token` is already declared in base.html (re-declaring with `const` throws SyntaxError)
 
 // Extract habit ID from URL: /habits/{id}/detail
 const habitIdMatch = window.location.pathname.match(/\/habits\/(\d+)\/detail/);

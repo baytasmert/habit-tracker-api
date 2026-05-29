@@ -84,7 +84,6 @@ class TestHabitCreationE2E:
 class TestHabitTrackingE2E:
     """Scenario 3: E2E habit tracking and streak display"""
 
-    @pytest.mark.xfail(reason="habitId undefined - Jinja2 template variable not passing to JavaScript. URL extraction fails")
     def test_track_habit_and_view_streak(self, page: Page, api_url, test_user):
         """
         E2E Test: User tracks a habit and verifies streak counter updates
@@ -131,22 +130,25 @@ class TestHabitTrackingE2E:
         page.locator("#trackForm").wait_for(state="visible", timeout=5000)
 
         # Mark as done
-        page.check("input[name=done]")
-        page.fill("input[name=duration]", "30")
-        page.select_option("select[name=mood]", "5")
+        page.check("#trackForm input[name=done]")
+        page.fill("#trackForm input[name=duration]", "30")
 
-        # Submit tracking form
-        save_button = page.locator("#trackForm button:has-text('Save')").first
+        # Mood is selected by clicking emoji buttons (sets hidden input mood_emoji)
+        page.locator("#trackForm button.mood-emoji").first.click()
+
+        # Submit tracking form - button text is "Kaydet" (Turkish for Save)
+        save_button = page.locator("#trackActivityForm button[type=submit]").first
         save_button.click()
 
-        # Verify streak counter appears
-        expect(page.locator("text=Streak")).to_be_visible(timeout=5000)
+        # Verify track form closes and habit detail re-renders with the new log
+        page.locator("#trackForm").wait_for(state="hidden", timeout=10000)
+        # Streak section heading is "Mevcut Seri:" — the page re-renders after tracking
+        expect(page.locator("text=Mevcut Seri").first).to_be_visible(timeout=10000)
 
 
 class TestHabitEditE2E:
     """Scenario 4: E2E habit editing"""
 
-    @pytest.mark.xfail(reason="habitId undefined - Jinja2 template variable not passing to JavaScript. URL extraction fails")
     def test_edit_habit_details(self, page: Page, api_url, test_user):
         """
         E2E Test: User edits habit details

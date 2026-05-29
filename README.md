@@ -58,14 +58,14 @@ cp .env.docker .env
 docker-compose up -d
 ```
 
-| Servis | URL |
-|--------|-----|
-| Web UI | http://localhost:8001 |
-| API | http://localhost:8000 |
-| API Docs | http://localhost:8000/docs |
-| Grafana | http://localhost:3000 (admin/admin) |
-| Prometheus | http://localhost:9090 |
-| Jaeger UI | http://localhost:16686 |
+| Servis | URL | Açıklama |
+|--------|-----|----------|
+| **Web UI + API** | http://localhost:8000 | FastAPI — login/register/home sayfaları + REST endpoint'leri |
+| API Docs (Swagger) | http://localhost:8000/docs | Interaktif API dokümantasyonu |
+| Static Files | http://localhost:8001 | NGINX — sadece CSS/JS static dosyaları |
+| Grafana | http://localhost:3000 | admin / admin |
+| Prometheus | http://localhost:9090 | Metrikler |
+| Jaeger UI | http://localhost:16686 | Distributed tracing |
 
 ---
 

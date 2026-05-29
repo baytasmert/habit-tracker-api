@@ -63,8 +63,8 @@ class TestHabitCreationE2E:
         expect(page).to_have_title("Home - Habit Tracker")
 
         # Wait for page to load and click create habit link
-        page.wait_for_selector("a:has-text('Create Habit')", timeout=5000)
-        page.click("a:has-text('Create Habit')")
+        page.wait_for_selector("a:has-text('Create New Habit')", timeout=5000)
+        page.click("a:has-text('Create New Habit')")
         page.wait_for_url(f"{api_url}/create-habit", timeout=5000)
 
         # Fill habit form
@@ -154,7 +154,7 @@ class TestHabitEditE2E:
         page.fill("input[name=name]", original_name)
         page.fill("textarea[name=description]", "Original description")
         page.select_option("select[name=goal_days_per_week]", "3")
-        page.click("button:has-text('Create Habit')")
+        page.click("button:has-text('Create New Habit')")
         page.wait_for_url(f"{api_url}/home", timeout=5000)
 
         # Navigate to habit detail and click edit (click first View link)

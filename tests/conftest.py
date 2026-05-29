@@ -183,7 +183,12 @@ def setup_authenticated_page(page, api_url, test_user):
 
     token = login_response.json().get("access_token")
 
-    # Set token in localStorage
-    page.goto(f"{api_url}/register")  # Establish domain context
+    # Set token in cookie (pages check for cookies, not localStorage)
+    page.goto(f"{api_url}/login")  # Establish domain context
+    page.context.add_cookies([{
+        "name": "auth_token",
+        "value": token,
+        "url": api_url
+    }])
     page.evaluate(f"localStorage.setItem('auth_token', '{token}')")
     return token

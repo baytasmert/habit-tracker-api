@@ -44,8 +44,10 @@ services:
       - ARGOCD_URL=${ARGOCD_URL}
       - API_RELOAD=${API_RELOAD}
     depends_on:
-      - db
-      - localstack
+      db:
+        condition: service_healthy
+      localstack:
+        condition: service_healthy
     command: uvicorn src.main:app --host 0.0.0.0 --port 8000 --reload
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
@@ -104,9 +106,11 @@ services:
     container_name: habit-tracker-jaeger
     ports:
       - "16686:16686"
-      - "6831:6831/udp"
+      - "4317:4317"      # OTLP gRPC - used by main.py OTLPSpanExporter
+      - "6831:6831/udp"  # Jaeger Thrift UDP (legacy)
     environment:
       - COLLECTOR_ZIPKIN_HOST_PORT=:9411
+      - COLLECTOR_OTLP_ENABLED=true
 
   grafana:
     image: grafana/grafana:latest

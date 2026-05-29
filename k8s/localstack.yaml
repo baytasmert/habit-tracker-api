@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: localstack
+  namespace: default
 spec:
   replicas: 1
   selector:
@@ -20,13 +21,21 @@ spec:
           value: "s3"
         ports:
         - containerPort: 4566
+        readinessProbe:
+          httpGet:
+            path: /_localstack/health
+            port: 4566
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          failureThreshold: 5
 
 ---
 
 apiVersion: v1
 kind: Service
 metadata:
-  name: localstack-service
+  name: localstack   # Must match AWS_ENDPOINT_URL: http://localstack:4566 in configmap
+  namespace: default
 spec:
   selector:
     app: localstack

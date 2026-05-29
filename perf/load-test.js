@@ -3,7 +3,7 @@
 import http from 'k6/http';
 import { check, sleep } from 'k6';
 
-const BASE_URL = __ENV.BASE_URL || 'http://localhost:8001';
+const BASE_URL = 'http://localhost:8001';
 
 export const options = {
   stages: [
@@ -29,46 +29,30 @@ export default function () {
   });
   sleep(Math.random() * 2 + 1); // 1-3s think time
 
-  // 2. Login (get auth token)
-  const timestamp = Math.floor(Date.now() / 1000); // Unix timestamp for uniqueness
-  const loginPayload = JSON.stringify({
+  // 2. Register then login (register-first avoids expected 401s counting as failures)
+  const timestamp = Math.floor(Date.now() / 1000);
+  const credentials = JSON.stringify({
     username: `user_${timestamp}_${Math.floor(Math.random() * 10000)}`,
     password: 'test123',
   });
 
-  const loginRes = http.post(`${BASE_URL}/login`, loginPayload, {
+  // Register - 201 success, 400 if already exists (both are expected)
+  http.post(`${BASE_URL}/register`, credentials, {
+    headers: { 'Content-Type': 'application/json' },
+    responseCallback: http.expectedStatuses(201, 400, 409),
+  });
+
+  // Login - should always succeed after register
+  const loginRes = http.post(`${BASE_URL}/login`, credentials, {
     headers: { 'Content-Type': 'application/json' },
   });
 
   let token = null;
-  let authUsername = JSON.parse(loginPayload).username;
-
-  if (loginRes.status === 401) {
-    // User doesn't exist, register first
-    const registerRes = http.post(`${BASE_URL}/register`, loginPayload, {
-      headers: { 'Content-Type': 'application/json' },
-    });
-
-    if (registerRes.status === 201 || registerRes.status === 200) {
-      // Now login
-      const retryLoginRes = http.post(`${BASE_URL}/login`, loginPayload, {
-        headers: { 'Content-Type': 'application/json' },
-      });
-      if (retryLoginRes.status === 200) {
-        try {
-          const body = JSON.parse(retryLoginRes.body);
-          token = body.access_token;
-        } catch (e) {
-          console.log(`Failed to parse login response for ${authUsername}: ${retryLoginRes.body}`);
-        }
-      }
-    }
-  } else if (loginRes.status === 200) {
+  if (loginRes.status === 200) {
     try {
-      const body = JSON.parse(loginRes.body);
-      token = body.access_token;
+      token = JSON.parse(loginRes.body).access_token;
     } catch (e) {
-      console.log(`Failed to parse login response for ${authUsername}: ${loginRes.body}`);
+      console.log(`Failed to parse login response: ${loginRes.body}`);
     }
   }
 

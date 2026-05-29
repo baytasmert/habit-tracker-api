@@ -12,9 +12,8 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-# Install Playwright browser dependencies and browsers
-RUN apt-get update && apt-get install -y \
-    libgtk-3-0 libgbm1 libxss1 libnss3 libnspr4 libxshmfence1 libasound2 \
+# Only install curl for healthcheck
+RUN apt-get update && apt-get install -y curl \
     && rm -rf /var/lib/apt/lists/*
 
 # Builder'dan yüklenen paketleri kopyala
@@ -30,9 +29,6 @@ COPY pytest.ini .
 
 # Port expose et
 EXPOSE 8000 8001
-
-# Install Playwright browsers
-RUN python -m playwright install chromium
 
 # Sunucuyu başlat
 CMD sh -c "uvicorn src.main:app --host 0.0.0.0 --port ${PORT:-8000}"

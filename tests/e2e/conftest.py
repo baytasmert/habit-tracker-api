@@ -10,9 +10,9 @@ def get_api_url():
     api_url = os.getenv("API_URL")
     if api_url:
         return api_url
-    # Frontend (NGINX) serves all UI pages on 8001
-    # API (backend) serves REST endpoints on 8000
-    return "http://localhost:8001"
+    # API serves both template pages (register, login, home) and REST endpoints
+    # on port 8000. NGINX frontend on 8001 is for static assets only.
+    return "http://localhost:8000"
 
 
 API_URL = get_api_url()

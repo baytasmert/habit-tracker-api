@@ -22,8 +22,11 @@ class TestUserRegistrationAndLoginE2E:
 
         # Fill and submit registration form
         unique_user = f"testuser_{int(time.time() * 1000)}"
+        unique_email = f"{unique_user}@test.com"
         page.fill("input[name=username]", unique_user)
+        page.fill("input[name=email]", unique_email)
         page.fill("input[name=password]", "password123")
+        page.fill("input[name=password-confirm]", "password123")
         page.click("button:has-text('Register')")
 
         # Should redirect to login page
@@ -56,8 +59,8 @@ class TestHabitCreationE2E:
         setup_authenticated_page(page, api_url, test_user)
 
         # Navigate to dashboard
-        page.goto(f"{api_url}/dashboard")
-        expect(page).to_have_title("Dashboard - Habit Tracker")
+        page.goto(f"{api_url}/home")
+        expect(page).to_have_title("Home - Habit Tracker")
 
         # Wait for page to load and click create habit link
         page.wait_for_selector("a:has-text('Create Habit')", timeout=5000)
@@ -74,7 +77,7 @@ class TestHabitCreationE2E:
         page.click("button:has-text('Create Habit')")
 
         # Should redirect back to dashboard and habit should be visible
-        page.wait_for_url(f"{api_url}/dashboard", timeout=5000)
+        page.wait_for_url(f"{api_url}/home", timeout=5000)
         expect(page.locator(f"text={habit_name}")).to_be_visible(timeout=5000)
 
 
@@ -101,7 +104,7 @@ class TestHabitTrackingE2E:
         page.fill("textarea[name=description]", "Test tracking")
         page.select_option("select[name=goal_days_per_week]", "7")
         page.click("button:has-text('Create Habit')")
-        page.wait_for_url(f"{api_url}/dashboard", timeout=5000)
+        page.wait_for_url(f"{api_url}/home", timeout=5000)
 
         # Navigate to habit detail page (click first View link, should be the one we just created)
         page.click("a:has-text('View')")
@@ -152,7 +155,7 @@ class TestHabitEditE2E:
         page.fill("textarea[name=description]", "Original description")
         page.select_option("select[name=goal_days_per_week]", "3")
         page.click("button:has-text('Create Habit')")
-        page.wait_for_url(f"{api_url}/dashboard", timeout=5000)
+        page.wait_for_url(f"{api_url}/home", timeout=5000)
 
         # Navigate to habit detail and click edit (click first View link)
         page.click("a:has-text('View')")
@@ -194,7 +197,7 @@ class TestErrorHandlingE2E:
         - Navigate to dashboard without authentication
         - Verify redirect to login page
         """
-        page.goto(f"{api_url}/dashboard")
+        page.goto(f"{api_url}/home")
         # Should redirect to login since no token in localStorage
         page.wait_for_url(f"{api_url}/login", timeout=5000)
         expect(page).to_have_title("Login - Habit Tracker")

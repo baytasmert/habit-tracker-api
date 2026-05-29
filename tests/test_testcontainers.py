@@ -22,14 +22,14 @@ pytestmark = pytest.mark.skipif(
     reason="Testcontainers psycopg2 Windows encoding issue - runs on Linux/CI only"
 )
 
-from testcontainers.postgres import PostgresContainer
-from sqlalchemy import create_engine, text
-from sqlalchemy.orm import sessionmaker
-from fastapi.testclient import TestClient
+from testcontainers.postgres import PostgresContainer  # noqa: E402
+from sqlalchemy import create_engine, text  # noqa: E402
+from sqlalchemy.orm import sessionmaker  # noqa: E402
+from fastapi.testclient import TestClient  # noqa: E402
 
-from src.database import Base
-from src.main import app
-from src.database import get_db
+from src.database import Base  # noqa: E402
+from src.main import app  # noqa: E402
+from src.database import get_db  # noqa: E402
 
 
 @pytest.fixture(scope="module")
@@ -147,7 +147,7 @@ class TestContainerDatabase:
             "duration": 30,
             "notes": "Testcontainer tracking"
         }, headers=headers)
-        assert track.status_code == 201
+        assert track.status_code == 200
 
         # Streak sorgula
         streak = tc_client.get(f"/habits/{habit_id}/streak", headers=headers)

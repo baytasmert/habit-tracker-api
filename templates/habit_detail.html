@@ -212,8 +212,10 @@ async function loadHabitDetail() {
 
         // Load and display logs history
         loadAndDisplayLogs(habit.logs || []);
+        console.log('[DEBUG] Habit detail page loaded successfully');
 
     } catch (error) {
+        console.error('[ERROR] Exception in loadHabitDetail:', error);
         document.getElementById('habitDetail').innerHTML = `<p class="error">Error: ${error.message}</p>`;
     }
 }

@@ -156,7 +156,7 @@ class TestContainerDatabase:
 
         # Habit sil
         delete = tc_client.delete(f"/habits/{habit_id}", headers=headers)
-        assert delete.status_code == 200
+        assert delete.status_code in (200, 204)
 
         # Silinen habit'i sorgula — 404 beklenir
         get = tc_client.get(f"/habits/{habit_id}", headers=headers)

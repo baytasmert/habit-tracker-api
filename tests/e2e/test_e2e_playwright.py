@@ -84,7 +84,7 @@ class TestHabitCreationE2E:
 class TestHabitTrackingE2E:
     """Scenario 3: E2E habit tracking and streak display"""
 
-    @pytest.mark.xfail(reason="API database tables missing - 'users' table not found. Requires DB initialization before E2E tests can run")
+    @pytest.mark.xfail(reason="Habit detail page buttons not rendering - async fetch issue. Track button should appear after API call but page stays in loading state")
     def test_track_habit_and_view_streak(self, page: Page, api_url, test_user):
         """
         E2E Test: User tracks a habit and verifies streak counter updates
@@ -146,7 +146,7 @@ class TestHabitTrackingE2E:
 class TestHabitEditE2E:
     """Scenario 4: E2E habit editing"""
 
-    @pytest.mark.xfail(reason="API database tables missing - 'users' table not found. Requires DB initialization before E2E tests can run")
+    @pytest.mark.xfail(reason="Habit detail page buttons not rendering - async fetch issue. Edit button should appear after API call but page stays in loading state")
     def test_edit_habit_details(self, page: Page, api_url, test_user):
         """
         E2E Test: User edits habit details
